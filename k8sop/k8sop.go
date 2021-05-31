@@ -11,15 +11,17 @@ import (
 
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/kube"
+	"helm.sh/helm/v3/pkg/release"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
 
 const (
-	DeploymentTagKey = "tag"
-	kubeConfigPath   = "/dummypath"
+	DeploymentTagKey    = "tag"
+	DeploymentStatusKey = "status"
+	kubeConfigPath      = "/dummypath"
 )
 
-func getHelmReleaseManifest(name string, namespace string) (string, error) {
+func getHelmRelease(name string, namespace string) (*release.Release, error) {
 
 	actionConfig := new(action.Configuration)
 
@@ -27,7 +29,7 @@ func getHelmReleaseManifest(name string, namespace string) (string, error) {
 	// all namespaces
 	if err := actionConfig.Init(kube.GetConfig(kubeConfigPath, "", namespace), namespace, os.Getenv("HELM_DRIVER"), log.Printf); err != nil {
 		log.Printf("%+v", err)
-		return "", err
+		return nil, err
 	}
 
 	get := action.NewGet(actionConfig)
@@ -35,17 +37,19 @@ func getHelmReleaseManifest(name string, namespace string) (string, error) {
 	get.Version = 0
 	release, err := get.Run(name)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return release.Manifest, nil
+	return release, nil
 }
 
-func GetHelmReleaseImageTag(name string) (map[string]string, error) {
+func GetHelmReleaseInfo(name string) (map[string]string, error) {
 
-	manifest, err := getHelmReleaseManifest(name, "default")
+	release, err := getHelmRelease(name, "default")
 	if err != nil {
 		return nil, err
 	}
+
+	manifest := release.Manifest
 
 	type Deployment struct {
 		Spec struct {
@@ -76,6 +80,7 @@ func GetHelmReleaseImageTag(name string) (map[string]string, error) {
 	tag := imageParts[len(imageParts)-1]
 
 	return map[string]string{
-		DeploymentTagKey: tag,
+		DeploymentTagKey:    tag,
+		DeploymentStatusKey: release.Info.Status.String(),
 	}, nil
 }

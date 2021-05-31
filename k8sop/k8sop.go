@@ -42,7 +42,7 @@ func getHelmRelease(name string, namespace string) (*release.Release, error) {
 	return release, nil
 }
 
-func GetHelmReleaseImageTag(name string) (map[string]string, error) {
+func GetHelmReleaseInfo(name string) (map[string]string, error) {
 
 	release, err := getHelmRelease(name, "default")
 	if err != nil {

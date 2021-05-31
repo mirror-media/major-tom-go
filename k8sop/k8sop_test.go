@@ -22,7 +22,8 @@ func TestGetHelmReleaseInfo(t *testing.T) {
 			},
 			want: map[string]string{
 				// FIXME it's a temp test case
-				"tag": "master__272",
+				DeploymentTagKey:    "master__272",
+				DeploymentStatusKey: "deployed",
 			},
 			wantErr: false,
 		},

@@ -80,6 +80,7 @@ func GetHelmReleaseInfo(name string) (map[string]string, error) {
 	tag := imageParts[len(imageParts)-1]
 
 	return map[string]string{
-		DeploymentTagKey: tag,
+		DeploymentTagKey:    tag,
+		DeploymentStatusKey: release.Info.Status.String(),
 	}, nil
 }

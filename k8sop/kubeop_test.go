@@ -35,9 +35,9 @@ func TestGetResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getResource(tt.args.ctx, tt.args.kubeConfigPath, tt.args.namespace, tt.args.name)
+			got, err := getPodInfo(tt.args.ctx, tt.args.kubeConfigPath, tt.args.namespace, tt.args.name)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("getResource() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("getPodInfo() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {

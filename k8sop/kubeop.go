@@ -14,7 +14,7 @@ const (
 // kubeConfigPath = "/dummypath"
 )
 
-func getResource(ctx context.Context, kubeConfigPath string, namespace string, name string) (map[string]int, error) {
+func getPodInfo(ctx context.Context, kubeConfigPath string, namespace string, name string) (map[string]int, error) {
 
 	// Initialize kubernetes-client
 	config, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)

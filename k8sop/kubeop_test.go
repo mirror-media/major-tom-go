@@ -1,0 +1,91 @@
+package k8sop
+
+import (
+	"context"
+	"reflect"
+	"testing"
+)
+
+func TestGetResource(t *testing.T) {
+	type args struct {
+		ctx            context.Context
+		kubeConfigPath string
+		namespace      string
+		name           string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    map[string]int
+		wantErr bool
+	}{
+		{
+			name: "get www pods",
+			args: args{
+				ctx: context.TODO(),
+				// FIXME we need proper path
+				kubeConfigPath: "/Users/chiu/dev/mtv/major-tom-go/configs/config",
+				namespace:      "default",
+				name:           "www",
+			},
+			want: map[string]int{
+				"master__272, Phase: Running, Ready: True": 1,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := getPodInfo(tt.args.ctx, tt.args.kubeConfigPath, tt.args.namespace, tt.args.name)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getPodInfo() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetResource() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getDeploymentInfo(t *testing.T) {
+	type args struct {
+		ctx            context.Context
+		kubeConfigPath string
+		namespace      string
+		name           string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    DeploymentInfo
+		wantErr bool
+	}{
+		{
+			name: "get www deployment info",
+			args: args{
+				ctx: context.Background(),
+				// FIXME we need proper path
+				kubeConfigPath: "/Users/chiu/dev/mtv/major-tom-go/configs/config",
+				namespace:      "default",
+				name:           "www",
+			},
+			want: DeploymentInfo{
+				Available: 1,
+				Ready:     1,
+				Updated:   1,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := getDeploymentInfo(tt.args.ctx, tt.args.kubeConfigPath, tt.args.namespace, tt.args.name)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getDeploymentInfo() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getDeploymentInfo() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

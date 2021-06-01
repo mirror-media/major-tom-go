@@ -29,7 +29,7 @@ func TestGetResource(t *testing.T) {
 				name:           "www",
 			},
 			want: map[string]int{
-				"Phase: Running; Ready: True": 1,
+				"master__272, Phase: Running, Ready: True": 1,
 			},
 		},
 	}

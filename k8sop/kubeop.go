@@ -3,6 +3,7 @@ package k8sop
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -44,8 +45,8 @@ func getResource(ctx context.Context, kubeConfigPath string, namespace string, n
 				ready = string(cond.Status)
 			}
 		}
-
-		key := fmt.Sprintf("Phase: %s; Ready: %s", pod.Status.Phase, ready)
+		imageParts := strings.Split(pod.Spec.Containers[0].Image, ":")
+		key := fmt.Sprintf("%s, Phase: %s, Ready: %s", imageParts[len(imageParts)-1], pod.Status.Phase, ready)
 		if _, found := status[key]; found {
 			status[key] = 0
 		}

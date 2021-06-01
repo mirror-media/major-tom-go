@@ -8,9 +8,10 @@ import (
 
 func TestGetResource(t *testing.T) {
 	type args struct {
-		ctx       context.Context
-		namespace string
-		name      string
+		ctx            context.Context
+		kubeConfigPath string
+		namespace      string
+		name           string
 	}
 	tests := []struct {
 		name    string
@@ -21,9 +22,11 @@ func TestGetResource(t *testing.T) {
 		{
 			name: "get www pods",
 			args: args{
-				ctx:       context.TODO(),
-				namespace: "default",
-				name:      "www",
+				ctx: context.TODO(),
+				// FIXME we need proper path
+				kubeConfigPath: "/Users/chiu/dev/mtv/major-tom-go/configs/config",
+				namespace:      "default",
+				name:           "www",
 			},
 			want: map[string]int{
 				"Phase: Running; Ready: True": 1,
@@ -32,9 +35,9 @@ func TestGetResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetResource(tt.args.ctx, tt.args.namespace, tt.args.name)
+			got, err := getResource(tt.args.ctx, tt.args.kubeConfigPath, tt.args.namespace, tt.args.name)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetResource() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("getResource() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {

@@ -10,10 +10,10 @@ import (
 )
 
 const (
-	kubeConfigPath = "/dummypath"
+// kubeConfigPath = "/dummypath"
 )
 
-func GetResource(ctx context.Context, namespace string, name string) (map[string]int, error) {
+func getResource(ctx context.Context, kubeConfigPath string, namespace string, name string) (map[string]int, error) {
 
 	// Initialize kubernetes-client
 	config, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
@@ -44,7 +44,7 @@ func GetResource(ctx context.Context, namespace string, name string) (map[string
 				ready = string(cond.Status)
 			}
 		}
-		fmt.Printf("%+v", pod.Status)
+
 		key := fmt.Sprintf("Phase: %s; Ready: %s", pod.Status.Phase, ready)
 		if _, found := status[key]; found {
 			status[key] = 0

@@ -60,17 +60,18 @@ func Test_getDeploymentInfo(t *testing.T) {
 		want    DeploymentInfo
 		wantErr bool
 	}{
+		// FIXME we need proper test cases
 		{
 			name: "get www deployment info",
 			args: args{
-				ctx: context.Background(),
-				// FIXME we need proper path
+				ctx:            context.Background(),
 				kubeConfigPath: "/Users/chiu/dev/mtv/major-tom-go/configs/config",
 				namespace:      "default",
 				name:           "www",
 			},
 			want: DeploymentInfo{
 				Available: 1,
+				ImageTag:  "master__272",
 				Ready:     1,
 				Updated:   1,
 			},

@@ -16,6 +16,7 @@ const (
 
 type DeploymentInfo struct {
 	Available int32
+	ImageTag  string
 	Ready     int32
 	Updated   int32
 }
@@ -42,8 +43,12 @@ func getDeploymentInfo(ctx context.Context, kubeConfigPath string, namespace str
 		return DeploymentInfo{}, err
 	}
 
+	containers := deployment.Spec.Template.Spec.Containers
+	imageParts := strings.Split(containers[0].Image, ":")
+
 	return DeploymentInfo{
 		Available: deployment.Status.AvailableReplicas,
+		ImageTag:  imageParts[len(imageParts)-1],
 		Ready:     deployment.Status.ReadyReplicas,
 		Updated:   deployment.Status.UpdatedReplicas,
 	}, nil

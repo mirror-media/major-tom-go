@@ -30,6 +30,9 @@ func Run(ctx context.Context, cmd string, txt string) (messages []string, err er
 	}
 	switch cmd := txtParts[0]; cmd {
 	case "list":
-		// TODO do operation
+		messages, err := command.List(ctx, txtParts[1:])
+		return messages, err
 	}
+	// TODO send help
+	return []string{"call help"}, errors.Errorf("command(%s) is not supported", cmd)
 }

@@ -10,7 +10,7 @@ func List(ctx context.Context, textParts []string) (message []string, err error)
 	switch len(textParts) {
 	case 0:
 		var projects []string
-		for key := range stages {
+		for key := range clusters {
 			projects = append(projects, key)
 		}
 		message = []string{

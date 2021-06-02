@@ -2,7 +2,7 @@
 package command
 
 // FIXME temporary workaround and it belongs to configurations provided to the functionality
-var stages map[string][]string = map[string][]string{
+var clusters map[string][]string = map[string][]string{
 	"mm": {
 		"prod",
 		"dev",

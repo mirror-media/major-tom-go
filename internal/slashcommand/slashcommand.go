@@ -5,10 +5,9 @@ import (
 	"context"
 	"strings"
 
-	mjcontext "github.com/mirror-media/major-tom-go/v2/internal/context"
+	"github.com/mirror-media/major-tom-go/v2/internal/command"
 
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 )
 
 const ACCEPTED_SLASHCMD = "/major-tom"
@@ -26,28 +25,21 @@ type Response struct {
 }
 
 // Run perform operation per cmd and txt. ctx is expected to have a response channel
-func Run(ctx context.Context, cmd string, txt string) {
-	respCh := ctx.Value(mjcontext.ResponseChannel)
-	if respCh == nil {
-		log.Error("there's response channel error: the command(%s) is not accepted")
-	}
-
+func Run(ctx context.Context, cmd string, txt string) (resp Response) {
 	if cmd != ACCEPTED_SLASHCMD {
-		respCh.(chan (Response)) <- Response{
+		return Response{
 			// TODO send help
 			Messages: []string{"call help"},
 			Err:      errors.Errorf("%s is not a supported slash command", cmd),
 		}
-		return
 	}
 	txtParts := strings.Split(txt, " ")
 	if len(txtParts) == 0 {
 		// TODO send help
-		respCh.(chan (Response)) <- Response{
+		return Response{
 			Messages: []string{"call help"},
 			Err:      errors.Errorf("%s is not a supported slash command", cmd),
 		}
-		return
 	}
 	switch txtParts[0] {
 	case "list":

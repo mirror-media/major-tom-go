@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/mirror-media/major-tom-go/v2/internal/slashcommand"

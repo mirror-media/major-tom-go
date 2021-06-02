@@ -2,7 +2,10 @@ package command
 
 import (
 	"context"
+	"fmt"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // List provide infomation about cluster, stages, and services. It should also provide helm message if input is invalid
@@ -16,7 +19,18 @@ func List(ctx context.Context, textParts []string) (message []string, err error)
 		message = []string{
 			"The following projects are available: " + strings.Join(projects, ", "),
 		}
-		return message, nil
+
+	case 1:
+		// List stages
+		project := textParts[0]
+		stages, isExisting := clusters[project]
+		if !isExisting {
+			// TODO call help
+			return []string{"call help"}, errors.Errorf("project(%s) doesn't exist", project)
+		}
+		message = []string{
+			fmt.Sprintf("The following stages are available for %s: %s", project, strings.Join(stages, ", ")),
+		}
 	}
-	return nil, nil
+	return message, err
 }

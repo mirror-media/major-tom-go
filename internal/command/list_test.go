@@ -18,6 +18,16 @@ func TestList(t *testing.T) {
 		wantErr     bool
 	}{
 		{
+			name: "ask for wrong project",
+			args: args{
+				ctx:       context.TODO(),
+				textParts: []string{"mn"},
+			},
+			// TODO change to config input
+			wantMessage: []string{"call help"},
+			wantErr:     true,
+		},
+		{
 			name: "ask for projects",
 			args: args{
 				ctx:       context.TODO(),
@@ -25,6 +35,15 @@ func TestList(t *testing.T) {
 			},
 			// TODO change to config input
 			wantMessage: []string{"The following projects are available: mm, tv, readr"},
+		},
+		{
+			name: "ask for stages",
+			args: args{
+				ctx:       context.TODO(),
+				textParts: []string{"mm"},
+			},
+			// TODO change to config input
+			wantMessage: []string{"The following stages are available for mm: prod, staging, dev"},
 		},
 	}
 	for _, tt := range tests {

@@ -5,6 +5,7 @@ package command
 var clusters map[string][]string = map[string][]string{
 	"mm": {
 		"prod",
+		"staging",
 		"dev",
 	},
 	"tv": {

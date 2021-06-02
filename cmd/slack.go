@@ -123,7 +123,14 @@ func main() {
 
 					client.Ack(*evt.Request, payload)
 
-					// TODO build the payload from response
+					messages, err := slashcommand.Run(ctx, cmd.Command, cmd.Text)
+					if err != nil {
+						messages = append([]string{err.Error()}, messages...)
+					}
+
+					message := strings.Join(messages, "\n")
+
+					api.PostMessage(cmd.ChannelID, slack.MsgOptionResponseURL(cmd.ResponseURL, "in_channel"), slack.MsgOptionText(message, false), slack.MsgOptionText(err.Error(), false))
 
 				default:
 					fmt.Fprintf(os.Stderr, "Unexpected event type received: %s\n", evt.Type)

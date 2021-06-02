@@ -9,6 +9,7 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	mjcontext "github.com/mirror-media/major-tom-go/v2/internal/context"
+	"github.com/mirror-media/major-tom-go/v2/internal/slashcommand"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 	"github.com/slack-go/slack/socketmode"
@@ -120,6 +121,24 @@ func main() {
 
 					// Add response timeout for every api operation
 					ctx, cancelFunc := context.WithTimeout(ctx, 1*time.Minute)
+					// Add response channel for every api operation
+					respChannel := make(chan slashcommand.Response)
+					ctx = context.WithValue(ctx, mjcontext.ResponseChannel, respChannel)
+
+					var resp slashcommand.Response
+					select {
+					case resp = <-respChannel:
+						// TODO add response
+						fmt.Println(resp)
+					case <-ctx.Done():
+						// TODO add response
+						resp = slashcommand.Response{
+							Err: ctx.Err(),
+						}
+					}
+					// Kill the api operation context since we are done with it
+					cancelFunc()
+					// TODO build the payload from response
 
 					payload := map[string]interface{}{
 						"blocks": []slack.Block{

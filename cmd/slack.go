@@ -117,30 +117,14 @@ func main() {
 
 					client.Debugf("Slash command received: %+v", cmd)
 
-					// TODO build the payload from response
-
 					payload := map[string]interface{}{
-						"blocks": []slack.Block{
-							slack.NewSectionBlock(
-								&slack.TextBlockObject{
-									Type: slack.MarkdownType,
-									Text: "foo",
-								},
-								nil,
-								slack.NewAccessory(
-									slack.NewButtonBlockElement(
-										"",
-										"somevalue",
-										&slack.TextBlockObject{
-											Type: slack.PlainTextType,
-											Text: "bar",
-										},
-									),
-								),
-							),
-						}}
+						"response_type": "in_channel",
+					}
 
 					client.Ack(*evt.Request, payload)
+
+					// TODO build the payload from response
+
 				default:
 					fmt.Fprintf(os.Stderr, "Unexpected event type received: %s\n", evt.Type)
 				}

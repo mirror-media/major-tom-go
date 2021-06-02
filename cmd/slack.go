@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
+	mjcontext "github.com/mirror-media/major-tom-go/v2/internal/context"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 	"github.com/slack-go/slack/socketmode"
@@ -115,6 +117,9 @@ func main() {
 					}
 
 					client.Debugf("Slash command received: %+v", cmd)
+
+					// Add response timeout for every api operation
+					ctx, cancelFunc := context.WithTimeout(ctx, 1*time.Minute)
 
 					payload := map[string]interface{}{
 						"blocks": []slack.Block{

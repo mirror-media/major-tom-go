@@ -18,30 +18,17 @@ type CMD struct {
 	Text    string
 }
 
-// Response contains messages or error for the slashcommand api operation
-type Response struct {
-	Messages []string
-	Err      error
-}
-
 // Run perform operation per cmd and txt. ctx is expected to have a response channel
-func Run(ctx context.Context, cmd string, txt string) (resp Response) {
+func Run(ctx context.Context, cmd string, txt string) (messages []string, err error) {
 	if cmd != ACCEPTED_SLASHCMD {
-		return Response{
-			// TODO send help
-			Messages: []string{"call help"},
-			Err:      errors.Errorf("%s is not a supported slash command", cmd),
-		}
+		return []string{"call help"}, errors.Errorf("%s is not a supported slash command", cmd)
 	}
 	txtParts := strings.Split(txt, " ")
 	if len(txtParts) == 0 {
 		// TODO send help
-		return Response{
-			Messages: []string{"call help"},
-			Err:      errors.Errorf("%s is not a supported slash command", cmd),
-		}
+		return []string{"call help"}, nil
 	}
-	switch txtParts[0] {
+	switch cmd := txtParts[0]; cmd {
 	case "list":
 		// TODO do operation
 	}

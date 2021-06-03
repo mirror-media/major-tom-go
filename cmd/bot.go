@@ -136,6 +136,9 @@ func main() {
 					client.Ack(*evt.Request, payload)
 
 					messages, err := slashcommand.Run(ctx, clusterConfigs, cmd.Command, cmd.Text)
+					if messages == nil {
+						messages = []string{}
+					}
 					if err != nil {
 						messages = append([]string{err.Error()}, messages...)
 					}

@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
-
-	log "github.com/sirupsen/logrus"
+	"strings"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/mirror-media/major-tom-go/v2/config"
+	"github.com/mirror-media/major-tom-go/v2/internal/slashcommand"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 	"github.com/slack-go/slack/socketmode"
@@ -40,7 +42,9 @@ func main() {
 		socketmode.OptionDebug(true),
 		socketmode.OptionLog(log.New(os.Stdout, "socketmode: ", log.Lshortfile|log.LstdFlags)),
 	)
+	// FIXME remove it and use client.Run(context.Context) instead
 	ctx := context.Background()
+	clusterConfigs := viper.Get("clusterConfigs").(config.K8S)
 	go func() {
 		for evt := range client.Events {
 			select {
@@ -118,27 +122,20 @@ func main() {
 					client.Debugf("Slash command received: %+v", cmd)
 
 					payload := map[string]interface{}{
-						"blocks": []slack.Block{
-							slack.NewSectionBlock(
-								&slack.TextBlockObject{
-									Type: slack.MarkdownType,
-									Text: "foo",
-								},
-								nil,
-								slack.NewAccessory(
-									slack.NewButtonBlockElement(
-										"",
-										"somevalue",
-										&slack.TextBlockObject{
-											Type: slack.PlainTextType,
-											Text: "bar",
-										},
-									),
-								),
-							),
-						}}
+						"response_type": "in_channel",
+					}
 
 					client.Ack(*evt.Request, payload)
+
+					messages, err := slashcommand.Run(ctx, cmd.Command, cmd.Text)
+					if err != nil {
+						messages = append([]string{err.Error()}, messages...)
+					}
+
+					message := strings.Join(messages, "\n")
+
+					api.PostMessage(cmd.ChannelID, slack.MsgOptionResponseURL(cmd.ResponseURL, "in_channel"), slack.MsgOptionText(message, false), slack.MsgOptionText(err.Error(), false))
+
 				default:
 					fmt.Fprintf(os.Stderr, "Unexpected event type received: %s\n", evt.Type)
 				}

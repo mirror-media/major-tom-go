@@ -90,3 +90,50 @@ func Test_getDeploymentInfo(t *testing.T) {
 		})
 	}
 }
+
+func Test_listServices(t *testing.T) {
+	type args struct {
+		ctx            context.Context
+		kubeConfigPath string
+		namespace      string
+	}
+	tests := []struct {
+		name            string
+		args            args
+		wantReleaseInfo []ReleaseInfo
+		wantErr         bool
+	}{
+		// FIXME we need proper test cases
+		{
+			name: "list dev",
+			args: args{
+				ctx:            context.TODO(),
+				kubeConfigPath: "/Users/chiu/dev/mtv/major-tom-go/configs/config",
+			},
+			wantReleaseInfo: []ReleaseInfo{
+				{Status: "deployed", Name: "cms"},
+				{Status: "deployed", Name: "cronjobs"},
+				{Status: "failed", Name: "elasticsearch"},
+				{Status: "deployed", Name: "graphql-external"},
+				{Status: "deployed", Name: "graphql-internal"},
+				{Status: "deployed", Name: "nginx-web"},
+				{Status: "deployed", Name: "redis-cluster"},
+				{Status: "deployed", Name: "secrets"},
+				{Status: "deployed", Name: "www"},
+				{Status: "deployed", Name: "yt-relay"},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotReleaseInfo, err := listReleases(tt.args.ctx, tt.args.kubeConfigPath, tt.args.namespace)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("listReleases() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotReleaseInfo, tt.wantReleaseInfo) {
+				t.Errorf("listReleases() = %v, want %v", gotReleaseInfo, tt.wantReleaseInfo)
+			}
+		})
+	}
+}

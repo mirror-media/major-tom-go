@@ -31,7 +31,14 @@ func main() {
 		fmt.Println("Config file changed:", e.Name)
 	})
 
-	appToken := viper.GetString("slackToken")
+	var cfg config.Config
+
+	err = viper.Unmarshal(&cfg)
+	if err != nil {
+		panic(fmt.Errorf("fatal error unmarshalling config file: %s \n", err))
+	}
+
+	appToken := cfg.SlackToken
 
 	api := slack.New("",
 		slack.OptionDebug(true),
@@ -44,7 +51,8 @@ func main() {
 	)
 	// FIXME remove it and use client.Run(context.Context) instead
 	ctx := context.Background()
-	clusterConfigs := viper.Get("clusterConfigs").(config.K8S)
+
+	clusterConfigs := cfg.ClusterConfigs
 	go func() {
 		for evt := range client.Events {
 			select {
@@ -127,7 +135,7 @@ func main() {
 
 					client.Ack(*evt.Request, payload)
 
-					messages, err := slashcommand.Run(ctx, cmd.Command, cmd.Text)
+					messages, err := slashcommand.Run(ctx, clusterConfigs, cmd.Command, cmd.Text)
 					if err != nil {
 						messages = append([]string{err.Error()}, messages...)
 					}

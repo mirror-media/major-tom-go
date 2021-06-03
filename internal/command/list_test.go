@@ -46,7 +46,6 @@ func TestList(t *testing.T) {
 				clusterConfigs: clusterConfigs,
 				textParts:      []string{"mn"},
 			},
-			// TODO change to config input
 			wantMessage: []string{"call help"},
 			wantErr:     true,
 		},
@@ -57,7 +56,6 @@ func TestList(t *testing.T) {
 				clusterConfigs: clusterConfigs,
 				textParts:      []string{},
 			},
-			// TODO change to config input
 			wantMessage: []string{"The following projects are available: mm, readr, tv"},
 		},
 		{
@@ -67,7 +65,6 @@ func TestList(t *testing.T) {
 				clusterConfigs: clusterConfigs,
 				textParts:      []string{"mm"},
 			},
-			// TODO change to config input
 			wantMessage: []string{"The following stages are available for mm: dev, prod, staging"},
 		},
 	}

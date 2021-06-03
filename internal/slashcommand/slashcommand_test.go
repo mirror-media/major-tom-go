@@ -60,7 +60,6 @@ func TestRun(t *testing.T) {
 				cmd:            "/major-tom",
 				txt:            "list",
 			},
-			// TODO change to config input
 			wantMessages: []string{"The following projects are available: mm, tv, readr"},
 			wantErr:      false,
 		},

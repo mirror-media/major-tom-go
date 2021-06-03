@@ -21,15 +21,24 @@ type DeploymentInfo struct {
 	Updated   int32
 }
 
-func getDeploymentInfo(ctx context.Context, kubeConfigPath string, namespace string, name string) (DeploymentInfo, error) {
+func getKubeCliSet(kubeConfigPath string, namespace string) (clientset *kubernetes.Clientset, err error) {
 	// Initialize kubernetes-client
 	config, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
 	if err != nil {
-		return DeploymentInfo{}, err
+		return nil, err
 	}
 	// Create new client with the given config
 	// https://pkg.go.dev/k8s.io/client-go/kubernetes?tab=doc#NewForConfig
-	clientset, err := kubernetes.NewForConfig(config)
+	clientset, err = kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+	return clientset, err
+}
+
+func getDeploymentInfo(ctx context.Context, kubeConfigPath string, namespace string, name string) (DeploymentInfo, error) {
+
+	clientset, err := getKubeCliSet(kubeConfigPath, namespace)
 	if err != nil {
 		return DeploymentInfo{}, err
 	}
@@ -57,15 +66,7 @@ func getDeploymentInfo(ctx context.Context, kubeConfigPath string, namespace str
 
 func getPodInfo(ctx context.Context, kubeConfigPath string, namespace string, name string) (map[string]int, error) {
 
-	// Initialize kubernetes-client
-	config, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
-	if err != nil {
-		return nil, err
-	}
-
-	// Create new client with the given config
-	// https://pkg.go.dev/k8s.io/client-go/kubernetes?tab=doc#NewForConfig
-	clientset, err := kubernetes.NewForConfig(config)
+	clientset, err := getKubeCliSet(kubeConfigPath, namespace)
 	if err != nil {
 		return nil, err
 	}

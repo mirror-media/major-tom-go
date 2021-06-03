@@ -3,6 +3,7 @@ package command
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/mirror-media/major-tom-go/v2/config"
@@ -17,6 +18,7 @@ func List(ctx context.Context, clusterConfigs config.K8S, textParts []string) (m
 		for key := range clusterConfigs {
 			projects = append(projects, string(key))
 		}
+		sort.Strings(projects)
 		message = []string{
 			"The following projects are available: " + strings.Join(projects, ", "),
 		}
@@ -24,7 +26,7 @@ func List(ctx context.Context, clusterConfigs config.K8S, textParts []string) (m
 	case 1:
 		// List stages
 		project := textParts[0]
-		stages, isExisting := clusters[project]
+		stageConfigs, isExisting := clusterConfigs[config.Project(project)]
 		if !isExisting {
 			// TODO call help
 			return []string{"call help"}, errors.Errorf("project(%s) doesn't exist", project)
@@ -33,9 +35,13 @@ func List(ctx context.Context, clusterConfigs config.K8S, textParts []string) (m
 		for k := range stageConfigs {
 			stages = append(stages, string(k))
 		}
+		sort.Strings(stages)
 		message = []string{
 			fmt.Sprintf("The following stages are available for %s: %s", project, strings.Join(stages, ", ")),
 		}
+	case 3:
+		// List services from helmrelease
+
 	}
 	return message, err
 }

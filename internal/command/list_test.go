@@ -58,7 +58,7 @@ func TestList(t *testing.T) {
 				textParts:      []string{},
 			},
 			// TODO change to config input
-			wantMessage: []string{"The following projects are available: mm, tv, readr"},
+			wantMessage: []string{"The following projects are available: mm, readr, tv"},
 		},
 		{
 			name: "ask for stages",
@@ -68,7 +68,7 @@ func TestList(t *testing.T) {
 				textParts:      []string{"mm"},
 			},
 			// TODO change to config input
-			wantMessage: []string{"The following stages are available for mm: prod, staging, dev"},
+			wantMessage: []string{"The following stages are available for mm: dev, prod, staging"},
 		},
 	}
 	for _, tt := range tests {

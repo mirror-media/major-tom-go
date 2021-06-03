@@ -69,7 +69,6 @@ func ListReleases(ctx context.Context, kubeConfigPath string) (releaseInfo []Rel
 }
 
 func listReleases(ctx context.Context, kubeConfigPath string, namespace string) (releaseInfo []ReleaseInfo, err error) {
-
 	clientset, err := getKubeDynamicCliSet(kubeConfigPath, namespace)
 	if err != nil {
 		return nil, err

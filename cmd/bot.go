@@ -143,9 +143,9 @@ func main() {
 						messages = append([]string{err.Error()}, messages...)
 					}
 
-					message := strings.Join(messages, "\n")
+					message := fmt.Sprintf("<@%s> on ground control\n```%s```", cmd.UserID, strings.Join(messages, "\n"))
 
-					api.PostMessage(cmd.ChannelID, slack.MsgOptionResponseURL(cmd.ResponseURL, "in_channel"), slack.MsgOptionText(message, false), slack.MsgOptionText(err.Error(), false))
+					api.PostMessage(cmd.ChannelID, slack.MsgOptionResponseURL(cmd.ResponseURL, "in_channel"), slack.MsgOptionText(message, false))
 
 				default:
 					fmt.Fprintf(os.Stderr, "Unexpected event type received: %s\n", evt.Type)

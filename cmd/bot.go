@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
+	"runtime"
 	"strings"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/mirror-media/major-tom-go/v2/config"
 	"github.com/mirror-media/major-tom-go/v2/internal/slashcommand"
+	"github.com/sirupsen/logrus"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 	"github.com/slack-go/slack/socketmode"
@@ -17,6 +20,15 @@ import (
 )
 
 func main() {
+	logrus.SetReportCaller(true)
+	logrus.SetFormatter(
+		&logrus.TextFormatter{
+			CallerPrettyfier: func(f *runtime.Frame) (string, string) {
+				filename := path.Base(f.File)
+				return fmt.Sprintf("%s()", f.Function), fmt.Sprintf("%s:%d", filename, f.Line)
+			},
+		})
+
 	viper.SetConfigName("config")    // name of config file (without extension)
 	viper.SetConfigType("yaml")      // REQUIRED if the config file does not have the extension in the name
 	viper.AddConfigPath("./configs") // path to look for the config file in

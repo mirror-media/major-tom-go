@@ -20,20 +20,24 @@ type CMD struct {
 }
 
 // Run perform operation per cmd and txt. ctx is expected to have a response channel
-func Run(ctx context.Context, clusterConfigs config.K8S, cmd string, txt string) (messages []string, err error) {
-	if cmd != ACCEPTED_SLASHCMD {
-		return []string{"call help"}, errors.Errorf("%s is not a supported slash command", cmd)
+func Run(ctx context.Context, clusterConfigs config.K8S, slashcmd string, txt string) (messages []string, err error) {
+	if slashcmd != ACCEPTED_SLASHCMD {
+		return []string{"call help"}, errors.Errorf("%s is not a supported slash command", slashcmd)
 	}
 	txtParts := strings.Split(txt, " ")
 	if len(txtParts) == 0 {
 		// TODO send help
 		return []string{"call help"}, nil
 	}
-	switch cmd := txtParts[0]; cmd {
+
+	cmd := txtParts[0]
+	switch cmd {
 	case "list":
-		messages, err := command.List(ctx, clusterConfigs, txtParts[1:])
-		return messages, err
+		messages, err = command.List(ctx, clusterConfigs, txtParts[1:])
+	default:
+		// TODO send help
+		messages = []string{"call help"}
+		err = errors.Errorf("command(%s) is not supported", cmd)
 	}
-	// TODO send help
-	return []string{"call help"}, errors.Errorf("command(%s) is not supported", cmd)
+	return messages, err
 }

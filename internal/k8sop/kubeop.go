@@ -2,10 +2,14 @@ package k8sop
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -34,6 +38,71 @@ func getKubeCliSet(kubeConfigPath string, namespace string) (clientset *kubernet
 		return nil, err
 	}
 	return clientset, err
+}
+
+func getKubeDynamicCliSet(kubeConfigPath string, namespace string) (clientset dynamic.Interface, err error) {
+	// Initialize kubernetes-client
+	config, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
+	if err != nil {
+		return nil, err
+	}
+	// Create new client with the given config
+	// https://pkg.go.dev/k8s.io/client-go/kubernetes?tab=doc#NewForConfig
+	clientset, err = dynamic.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+	return clientset, err
+}
+
+type ReleaseInfo struct {
+	Status string `json:"releaseStatus"`
+	Name   string `json:"releaseName"`
+}
+
+type ReleaseStatus struct {
+	Status ReleaseInfo `json:"status"`
+}
+
+func ListReleases(ctx context.Context, kubeConfigPath string) (releaseInfo []ReleaseInfo, err error) {
+	return listReleases(ctx, kubeConfigPath, "default")
+}
+
+func listReleases(ctx context.Context, kubeConfigPath string, namespace string) (releaseInfo []ReleaseInfo, err error) {
+
+	clientset, err := getKubeDynamicCliSet(kubeConfigPath, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	gvr := schema.GroupVersionResource{
+		Group:    "helm.fluxcd.io",
+		Version:  "v1",
+		Resource: "helmreleases",
+	}
+
+	list, err := clientset.Resource(gvr).List(ctx, v1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	items := list.Items
+
+	releaseInfo = make([]ReleaseInfo, len(items))
+	for i, item := range items {
+		var status ReleaseStatus
+
+		b, err := item.MarshalJSON()
+		if err != nil {
+			return nil, err
+		}
+		json.Unmarshal(b, &status)
+		releaseInfo[i] = status.Status
+	}
+
+	sort.Slice(releaseInfo, func(i, j int) bool { return releaseInfo[i].Name < releaseInfo[j].Name })
+
+	return releaseInfo, nil
 }
 
 func getDeploymentInfo(ctx context.Context, kubeConfigPath string, namespace string, name string) (DeploymentInfo, error) {

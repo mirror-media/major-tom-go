@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/mirror-media/major-tom-go/v2/config"
+	"github.com/mirror-media/major-tom-go/v2/internal/k8sop"
 	"github.com/pkg/errors"
 )
 
@@ -39,9 +40,23 @@ func List(ctx context.Context, clusterConfigs config.K8S, textParts []string) (m
 		messages = []string{
 			fmt.Sprintf("The following stages are available for %s: %s", project, strings.Join(stages, ", ")),
 		}
-	case 3:
-		// List services from helmrelease
+	case 2:
+		kubeConfigPath, err := k8sop.SwitchKubeConfig(clusterConfigs, textParts[0], textParts[1])
+		if err != nil {
+			return nil, err
+		}
+		releases, err := k8sop.ListReleases(ctx, kubeConfigPath)
+		if err != nil {
+			return nil, err
+		}
 
+		messages = make([]string, len(releases))
+		for i, release := range releases {
+			messages[i] = fmt.Sprintf("%s: %s", release.Name, release.Status)
+		}
+	default:
+		err = errors.Errorf("What is going on now?")
 	}
+
 	return messages, err
 }

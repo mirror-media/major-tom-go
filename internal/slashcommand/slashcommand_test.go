@@ -4,13 +4,34 @@ import (
 	"context"
 	"reflect"
 	"testing"
+
+	"github.com/mirror-media/major-tom-go/v2/config"
 )
+
+// FIXME we need proper test path
+var clusterConfigs = config.K8S{
+	"mm": {
+		"prod":    "/Users/chiu/dev/mtv/major-tom-go/configs/config",
+		"staging": "/Users/chiu/dev/mtv/major-tom-go/configs/config",
+		"dev":     "/Users/chiu/dev/mtv/major-tom-go/configs/config",
+	},
+	"tv": {
+		"prod":    "/Users/chiu/dev/mtv/major-tom-go/configs/config",
+		"staging": "/Users/chiu/dev/mtv/major-tom-go/configs/config",
+		"dev":     "/Users/chiu/dev/mtv/major-tom-go/configs/config",
+	},
+	"readr": {
+		"prod": "/Users/chiu/dev/mtv/major-tom-go/configs/config",
+		"dev":  "/Users/chiu/dev/mtv/major-tom-go/configs/config",
+	},
+}
 
 func TestRun(t *testing.T) {
 	type args struct {
-		ctx context.Context
-		cmd string
-		txt string
+		ctx            context.Context
+		clusterConfigs config.K8S
+		cmd            string
+		txt            string
 	}
 	tests := []struct {
 		name         string
@@ -18,12 +39,14 @@ func TestRun(t *testing.T) {
 		wantMessages []string
 		wantErr      bool
 	}{
+
 		{
 			name: "wrong slashcommand",
 			args: args{
-				ctx: context.TODO(),
-				cmd: "/mahjong-tom",
-				txt: "list",
+				ctx:            context.TODO(),
+				clusterConfigs: clusterConfigs,
+				cmd:            "/mahjong-tom",
+				txt:            "list",
 			},
 			// TODO change to helper function
 			wantMessages: []string{"call help"},
@@ -32,9 +55,10 @@ func TestRun(t *testing.T) {
 		{
 			name: "list projects",
 			args: args{
-				ctx: context.TODO(),
-				cmd: "/major-tom",
-				txt: "list",
+				ctx:            context.TODO(),
+				clusterConfigs: clusterConfigs,
+				cmd:            "/major-tom",
+				txt:            "list",
 			},
 			// TODO change to config input
 			wantMessages: []string{"The following projects are available: mm, tv, readr"},
@@ -43,7 +67,7 @@ func TestRun(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotMessages, err := Run(tt.args.ctx, tt.args.cmd, tt.args.txt)
+			gotMessages, err := Run(tt.args.ctx, tt.args.clusterConfigs, tt.args.cmd, tt.args.txt)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Run() error = %v, wantErr %v", err, tt.wantErr)
 				return

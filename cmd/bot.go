@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/mirror-media/major-tom-go/v2/config"
 	"github.com/mirror-media/major-tom-go/v2/internal/slashcommand"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
@@ -41,7 +42,9 @@ func main() {
 		socketmode.OptionDebug(true),
 		socketmode.OptionLog(log.New(os.Stdout, "socketmode: ", log.Lshortfile|log.LstdFlags)),
 	)
+	// FIXME remove it and use client.Run(context.Context) instead
 	ctx := context.Background()
+	clusterConfigs := viper.Get("clusterConfigs").(config.K8S)
 	go func() {
 		for evt := range client.Events {
 			select {

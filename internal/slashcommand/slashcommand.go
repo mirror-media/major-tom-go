@@ -5,6 +5,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/mirror-media/major-tom-go/v2/config"
 	"github.com/mirror-media/major-tom-go/v2/internal/command"
 
 	"github.com/pkg/errors"
@@ -19,7 +20,7 @@ type CMD struct {
 }
 
 // Run perform operation per cmd and txt. ctx is expected to have a response channel
-func Run(ctx context.Context, cmd string, txt string) (messages []string, err error) {
+func Run(ctx context.Context, clusterConfigs config.K8S, cmd string, txt string) (messages []string, err error) {
 	if cmd != ACCEPTED_SLASHCMD {
 		return []string{"call help"}, errors.Errorf("%s is not a supported slash command", cmd)
 	}
@@ -30,7 +31,7 @@ func Run(ctx context.Context, cmd string, txt string) (messages []string, err er
 	}
 	switch cmd := txtParts[0]; cmd {
 	case "list":
-		messages, err := command.List(ctx, txtParts[1:])
+		messages, err := command.List(ctx, clusterConfigs, txtParts[1:])
 		return messages, err
 	}
 	// TODO send help

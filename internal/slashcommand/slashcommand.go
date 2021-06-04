@@ -34,6 +34,8 @@ func Run(ctx context.Context, clusterConfigs config.K8S, slashcmd string, txt st
 	switch cmd {
 	case "list":
 		messages, err = command.List(ctx, clusterConfigs, txtParts[1:])
+	case "info":
+		messages, err = command.Info(ctx, clusterConfigs, txtParts[1:])
 	default:
 		// TODO send help
 		messages = []string{"call help"}

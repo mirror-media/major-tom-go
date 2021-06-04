@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/pkg/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
@@ -109,6 +110,23 @@ func listReleases(ctx context.Context, kubeConfigPath string, namespace string) 
 	sort.Slice(releaseInfo, func(i, j int) bool { return releaseInfo[i].Name < releaseInfo[j].Name })
 
 	return releaseInfo, nil
+}
+
+// GetDeploymentInfo return the status of current deployments for the specific service
+func GetDeploymentInfo(ctx context.Context, kubeConfigPath string, name string) (DeploymentInfo, error) {
+	list, err := ListReleases(ctx, kubeConfigPath)
+	if err != nil {
+		return DeploymentInfo{}, err
+	}
+	namespaces := make(map[string]string, len(list))
+	for _, release := range list {
+		namespaces[release.Name] = release.Namespace
+	}
+	namespace, isExisting := namespaces[name]
+	if !isExisting {
+		return DeploymentInfo{}, errors.Errorf("service(%s) doesn't exist or isn't operable", name)
+	}
+	return getDeploymentInfo(ctx, kubeConfigPath, namespace, name)
 }
 
 func getDeploymentInfo(ctx context.Context, kubeConfigPath string, namespace string, name string) (DeploymentInfo, error) {

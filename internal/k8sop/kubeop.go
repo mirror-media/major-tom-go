@@ -56,12 +56,18 @@ func getKubeDynamicCliSet(kubeConfigPath string, namespace string) (clientset dy
 }
 
 type ReleaseInfo struct {
-	Status string `json:"releaseStatus"`
-	Name   string `json:"releaseName"`
+	Name      string `json:"releaseName"`
+	Namespace string
+	Status    string `json:"releaseStatus"`
+}
+
+type Metadata struct {
+	Namespace string `json:"namespace"`
 }
 
 type ReleaseStatus struct {
-	Status ReleaseInfo `json:"status"`
+	Status   ReleaseInfo `json:"status"`
+	Metadata Metadata    `json:"metadata"`
 }
 
 func ListReleases(ctx context.Context, kubeConfigPath string) (releaseInfo []ReleaseInfo, err error) {
@@ -97,6 +103,7 @@ func listReleases(ctx context.Context, kubeConfigPath string, namespace string) 
 		}
 		json.Unmarshal(b, &status)
 		releaseInfo[i] = status.Status
+		releaseInfo[i].Namespace = status.Metadata.Namespace
 	}
 
 	sort.Slice(releaseInfo, func(i, j int) bool { return releaseInfo[i].Name < releaseInfo[j].Name })

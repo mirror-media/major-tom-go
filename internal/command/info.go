@@ -31,11 +31,7 @@ func Info(ctx context.Context, clusterConfigs config.K8S, textParts []string) (m
 			messages = []string{"call list"}
 			break
 		}
-		messages = []string{fmt.Sprintf(`%s
-		ImageTag: %s
-		Available pods: %d
-		Ready pods: %d
-		Updated pods: %d`, textParts[2], info.ImageTag, info.Available, info.Ready, info.Updated)}
+		messages = []string{fmt.Sprintf("%s\n\tImageTag: %s\n\tAvailable pods: %d\n\tReady pods: %d\n\tUpdated pods: %d", textParts[2], info.ImageTag, info.Available, info.Ready, info.Updated)}
 	}
 
 	return messages, err

@@ -137,3 +137,45 @@ func Test_listServices(t *testing.T) {
 		})
 	}
 }
+
+func TestGetDeploymentInfo(t *testing.T) {
+	type args struct {
+		ctx            context.Context
+		kubeConfigPath string
+		name           string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    DeploymentInfo
+		wantErr bool
+	}{
+		// FIXME we need proper test cases
+		{
+			name: "wip",
+			args: args{
+				ctx:            context.TODO(),
+				kubeConfigPath: "/Users/chiu/dev/mtv/major-tom-go/configs/config",
+				name:           "yt-relay",
+			},
+			want: DeploymentInfo{
+				Available: 1,
+				ImageTag:  "master__59",
+				Ready:     1,
+				Updated:   1,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetDeploymentInfo(tt.args.ctx, tt.args.kubeConfigPath, tt.args.name)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetDeploymentInfo() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetDeploymentInfo() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

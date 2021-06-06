@@ -19,43 +19,43 @@ import (
 // FIXME we need proper path
 var gitConfig = map[string]map[string]string{
 	"mw": {
-		"url":        "ssh://mnews@mnews.tw@source.developers.google.com:2022/p/mirrormedia-1470651750304/r/helm",
 		"branch":     "master",
 		"sshKeyPath": "/Users/chiu/dev/mtv/major-tom-go/configs/identity",
 		"sshKeyUser": "mnews@mnews.tw",
+		"url":        "ssh://mnews@mnews.tw@source.developers.google.com:2022/p/mirrormedia-1470651750304/r/helm",
 	},
 	"tv": {
-		"url":        "ssh://source.developers.google.com:2022/p/mirror-tv-275709/r/helm",
 		"branch":     "master",
 		"sshKeyPath": "/Users/chiu/dev/mtv/major-tom-go/configs/identity",
 		"sshKeyUser": "mnews@mnews.tw",
+		"url":        "ssh://source.developers.google.com:2022/p/mirror-tv-275709/r/helm",
 	},
 	"readr": {
-		"url":        "ssh://mnews@mnews.tw@source.developers.google.com:2022/p/mirrormedia-1470651750304/r/helm",
 		"branch":     "master",
 		"sshKeyPath": "/Users/chiu/dev/mtv/major-tom-go/configs/identity",
 		"sshKeyUser": "mnews@mnews.tw",
+		"url":        "ssh://mnews@mnews.tw@source.developers.google.com:2022/p/mirrormedia-1470651750304/r/helm",
 	},
 }
 
 type Repository struct {
-	r      *git.Repository
-	once   *sync.Once
 	config map[string]string
+	once   *sync.Once
+	r      *git.Repository
 }
 
 var mw, tv, readr = &Repository{
-	r:      nil,
-	once:   &sync.Once{},
 	config: gitConfig["mw"],
-}, &Repository{
-	r:      nil,
 	once:   &sync.Once{},
+	r:      nil,
+}, &Repository{
 	config: gitConfig["tv"],
-}, &Repository{
-	r:      nil,
 	once:   &sync.Once{},
+	r:      nil,
+}, &Repository{
 	config: gitConfig["readr"],
+	once:   &sync.Once{},
+	r:      nil,
 }
 
 // GetFile will return a File interface with read and write permission
@@ -93,8 +93,8 @@ func commit(r *git.Repository, filename, name, email, message string) error {
 
 	commit, err := worktree.Commit(message, &git.CommitOptions{
 		Author: &object.Signature{
-			Name:  name,
 			Email: email,
+			Name:  name,
 			When:  time.Now(),
 		},
 	})
@@ -157,12 +157,12 @@ func getRepository(project string) (repo *Repository, err error) {
 			return
 		}
 		opt := git.CloneOptions{
-			URL:           config["url"],
+			Auth: sshMethod,
+			// Set depth to 1 because we only need the HEAD
+			Depth:         1,
 			ReferenceName: plumbing.NewBranchReferenceName(config["branch"]),
 			SingleBranch:  true,
-			Auth:          sshMethod,
-			// Set depth to 1 because we only need the HEAD
-			Depth: 1,
+			URL:           config["url"],
 		}
 		newGitRepo, errGitRepo := cloneGitRepo(opt)
 		if errGitRepo != nil {

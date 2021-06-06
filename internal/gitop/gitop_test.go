@@ -17,8 +17,9 @@ func TestRepository_GetFile(t *testing.T) {
 		panic(1)
 	}
 	type fields struct {
-		r    *git.Repository
-		once *sync.Once
+		config map[string]string
+		once   *sync.Once
+		r      *git.Repository
 	}
 	type args struct {
 		filenamePath string
@@ -33,8 +34,9 @@ func TestRepository_GetFile(t *testing.T) {
 		{
 			name: "dev for tv",
 			fields: fields{
-				r:    repo.r,
-				once: repo.once,
+				config: gitConfig["tv"],
+				once:   repo.once,
+				r:      repo.r,
 			},
 			args: args{
 				filenamePath: "cms/values-prod.yaml",
@@ -44,8 +46,9 @@ func TestRepository_GetFile(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := &Repository{
-				r:    tt.fields.r,
-				once: tt.fields.once,
+				config: tt.fields.config,
+				once:   tt.fields.once,
+				r:      tt.fields.r,
 			}
 			got, err := repo.GetFile(tt.args.filenamePath)
 			if (err != nil) != tt.wantErr {

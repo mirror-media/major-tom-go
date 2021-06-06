@@ -173,5 +173,8 @@ func getRepository(project string) (repo *Repository, err error) {
 			repo.r = newGitRepo
 		}
 	})
+	if err == nil {
+		err = repo.Pull()
+	}
 	return repo, err
 }

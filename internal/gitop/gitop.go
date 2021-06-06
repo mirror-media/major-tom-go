@@ -2,7 +2,6 @@ package gitop
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"sync"
 	"time"
@@ -68,12 +67,6 @@ func (repo *Repository) GetFile(filenamePath string) (billy.File, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	b, err := io.ReadAll(f)
-	if err != nil {
-		return nil, err
-	}
-	fmt.Println(string(b))
 
 	return f, err
 }

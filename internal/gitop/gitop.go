@@ -18,7 +18,7 @@ import (
 // TODO move to configuration
 // FIXME we need proper path
 var gitConfig = map[string]map[string]string{
-	"mw": {
+	"mm": {
 		"branch":     "master",
 		"sshKeyPath": "/Users/chiu/dev/mtv/major-tom-go/configs/identity",
 		"sshKeyUser": "mnews@mnews.tw",
@@ -44,8 +44,8 @@ type Repository struct {
 	r      *git.Repository
 }
 
-var mw, tv, readr = &Repository{
-	config: gitConfig["mw"],
+var mm, tv, readr = &Repository{
+	config: gitConfig["mm"],
 	once:   &sync.Once{},
 	r:      nil,
 }, &Repository{
@@ -131,8 +131,8 @@ func GetRepository(project string) (r *Repository, err error) {
 
 func getRepository(project string) (repo *Repository, err error) {
 	switch project {
-	case "mw":
-		repo = mw
+	case "mm":
+		repo = mm
 	case "tv":
 		repo = tv
 	case "readr":

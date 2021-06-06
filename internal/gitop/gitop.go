@@ -161,6 +161,8 @@ func getRepository(project string) (repo *Repository, err error) {
 			ReferenceName: plumbing.NewBranchReferenceName(config["branch"]),
 			SingleBranch:  true,
 			Auth:          sshMethod,
+			// Set depth to 1 because we only need the HEAD
+			Depth: 1,
 		}
 		newGitRepo, errGitRepo := cloneGitRepo(opt)
 		if errGitRepo != nil {

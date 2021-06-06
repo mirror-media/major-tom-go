@@ -123,6 +123,10 @@ func (repo *Repository) Pull() error {
 	})
 }
 
+func (repo *Repository) Push() error {
+	return repo.r.Push(&git.PushOptions{})
+}
+
 func GetRepository(project string) (r *Repository, err error) {
 
 	// Get the singleton repository according to the project

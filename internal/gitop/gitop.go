@@ -72,8 +72,8 @@ func (repo *Repository) GetFile(filenamePath string) (io.ReadWriter, error) {
 	return f, err
 }
 
-// AddFiles add the file to the staging area of worktree
-func (repo *Repository) AddFiles(filenamePath string) error {
+// AddFile add the file to the staging area of worktree
+func (repo *Repository) AddFile(filenamePath string) error {
 	worktree, err := repo.r.Worktree()
 	if err != nil {
 		return err

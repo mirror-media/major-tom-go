@@ -12,6 +12,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // TODO move to configuration
@@ -69,6 +70,20 @@ func (repo *Repository) GetFile(filenamePath string) (io.ReadWriter, error) {
 	}
 
 	return f, err
+}
+
+// AddFiles add the file to the staging area of worktree
+func (repo *Repository) AddFiles(filenamePath string) error {
+	worktree, err := repo.r.Worktree()
+	if err != nil {
+		return err
+	}
+
+	_, err = worktree.Add(filenamePath)
+
+	logrus.Infof("$s is added to the staging area", filenamePath)
+
+	return err
 }
 
 // Commit with username as slack caller name annotated by (Major Tom)

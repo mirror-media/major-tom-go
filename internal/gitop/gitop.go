@@ -62,7 +62,7 @@ var mm, tv, readr = &Repository{
 func (repo *Repository) GetFile(filenamePath string) (io.ReadWriter, error) {
 	worktree, err := repo.r.Worktree()
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 	f, err := worktree.Filesystem.OpenFile(filenamePath, 0666, os.ModePerm)
 	if err != nil {
@@ -96,7 +96,7 @@ func commit(r *git.Repository, filename, name, email, message string) error {
 
 	worktree, err := r.Worktree()
 	if err != nil {
-		return nil
+		return err
 	}
 
 	commit, err := worktree.Commit(message, &git.CommitOptions{

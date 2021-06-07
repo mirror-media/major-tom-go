@@ -42,6 +42,7 @@ type Repository struct {
 	config map[string]string
 	once   *sync.Once
 	r      *git.Repository
+	locker sync.Mutex
 }
 
 var mm, tv, readr = &Repository{
@@ -60,6 +61,8 @@ var mm, tv, readr = &Repository{
 
 // GetFile will return an io.ReadWriter with read and write permission
 func (repo *Repository) GetFile(filenamePath string) (io.ReadWriter, error) {
+	repo.locker.Lock()
+	defer repo.locker.Unlock()
 	worktree, err := repo.r.Worktree()
 	if err != nil {
 		return nil, err
@@ -74,6 +77,8 @@ func (repo *Repository) GetFile(filenamePath string) (io.ReadWriter, error) {
 
 // AddFile add the file to the staging area of worktree
 func (repo *Repository) AddFile(filenamePath string) error {
+	repo.locker.Lock()
+	defer repo.locker.Unlock()
 	worktree, err := repo.r.Worktree()
 	if err != nil {
 		return err
@@ -88,12 +93,13 @@ func (repo *Repository) AddFile(filenamePath string) error {
 
 // Commit with username as slack caller name annotated by (Major Tom)
 func (repo *Repository) Commit(filename, caller, message string) error {
+	repo.locker.Lock()
+	defer repo.locker.Unlock()
 	// TODO extract email and bot name as configuration
 	return commit(repo.r, filename, fmt.Sprintf("%s(%s)", caller, "Major Tom"), "mnews@mnews.tw", message)
 }
 
 func commit(r *git.Repository, filename, name, email, message string) error {
-
 	worktree, err := r.Worktree()
 	if err != nil {
 		return err
@@ -120,6 +126,8 @@ func commit(r *git.Repository, filename, name, email, message string) error {
 }
 
 func (repo *Repository) Pull() error {
+	repo.locker.Lock()
+	defer repo.locker.Unlock()
 	worktree, err := repo.r.Worktree()
 	if err != nil {
 		return err
@@ -132,6 +140,8 @@ func (repo *Repository) Pull() error {
 }
 
 func (repo *Repository) Push() error {
+	repo.locker.Lock()
+	defer repo.locker.Unlock()
 	return repo.r.Push(&git.PushOptions{})
 }
 
@@ -152,6 +162,9 @@ func getRepository(project string) (repo *Repository, err error) {
 	default:
 		return nil, errors.New("wrong project")
 	}
+
+	repo.locker.Lock()
+	defer repo.locker.Unlock()
 
 	// Init git repo
 	repo.once.Do(func() {

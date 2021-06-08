@@ -41,6 +41,7 @@ var gitConfig = map[string]map[string]string{
 type Repository struct {
 	authMethod ssh.AuthMethod
 	config     map[string]string
+	name       string
 	once       *sync.Once
 	r          *git.Repository
 	locker     *sync.Mutex
@@ -48,16 +49,19 @@ type Repository struct {
 
 var mm, tv, readr = &Repository{
 	config: gitConfig["mm"],
+	name:   "mirror weekly helm repo",
 	once:   &sync.Once{},
 	r:      nil,
 	locker: &sync.Mutex{},
 }, &Repository{
 	config: gitConfig["tv"],
+	name:   "mirror tv helm repo",
 	once:   &sync.Once{},
 	r:      nil,
 	locker: &sync.Mutex{},
 }, &Repository{
 	config: gitConfig["readr"],
+	name:   "readr helm repo",
 	once:   &sync.Once{},
 	r:      nil,
 	locker: &sync.Mutex{},

@@ -2,11 +2,11 @@ package gitop
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"sync"
 	"time"
 
+	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
@@ -41,6 +41,7 @@ var gitConfig = map[string]map[string]string{
 type Repository struct {
 	authMethod ssh.AuthMethod
 	config     map[string]string
+	name       string
 	once       *sync.Once
 	r          *git.Repository
 	locker     *sync.Mutex
@@ -48,23 +49,26 @@ type Repository struct {
 
 var mm, tv, readr = &Repository{
 	config: gitConfig["mm"],
+	name:   "mirror weekly helm repo",
 	once:   &sync.Once{},
 	r:      nil,
 	locker: &sync.Mutex{},
 }, &Repository{
 	config: gitConfig["tv"],
+	name:   "mirror tv helm repo",
 	once:   &sync.Once{},
 	r:      nil,
 	locker: &sync.Mutex{},
 }, &Repository{
 	config: gitConfig["readr"],
+	name:   "readr helm repo",
 	once:   &sync.Once{},
 	r:      nil,
 	locker: &sync.Mutex{},
 }
 
-// GetFile will return an io.ReadWriter with read and write permission
-func (repo *Repository) GetFile(filenamePath string) (io.ReadWriter, error) {
+// GetFile will return an billy.Filewith read and write permission
+func (repo *Repository) GetFile(filenamePath string) (billy.File, error) {
 	repo.locker.Lock()
 	defer repo.locker.Unlock()
 	worktree, err := repo.r.Worktree()
@@ -95,15 +99,48 @@ func (repo *Repository) AddFile(filenamePath string) error {
 	return err
 }
 
+// GetHeadHash hard reset the worktree to the commit to clear changes
+func (repo *Repository) GetHeadHash() (plumbing.Hash, error) {
+	repo.locker.Lock()
+	defer repo.locker.Unlock()
+
+	head, err := repo.r.Head()
+	if err != nil {
+		return plumbing.Hash{}, err
+	}
+
+	return head.Hash(), nil
+}
+
+// HardResetToCommit hard reset the worktree to the commit to clear changes
+func (repo *Repository) HardResetToCommit(commit plumbing.Hash) error {
+	repo.locker.Lock()
+	defer repo.locker.Unlock()
+	worktree, err := repo.r.Worktree()
+	if err != nil {
+		return err
+	}
+
+	err = worktree.Reset(&git.ResetOptions{
+		Commit: commit,
+		Mode:   git.HardReset,
+	})
+
+	logrus.Warn("repo is hard reset to head")
+
+	return err
+}
+
 // Commit with username as slack caller name annotated by (Major Tom)
 func (repo *Repository) Commit(filename, caller, message string) error {
 	repo.locker.Lock()
 	defer repo.locker.Unlock()
 	// TODO extract email and bot name as configuration
-	return commit(repo.r, filename, fmt.Sprintf("%s(%s)", caller, "Major Tom"), "mnews@mnews.tw", message)
+	return commit(repo, filename, fmt.Sprintf("%s(%s)", "Major Tom", caller), "mnews@mnews.tw", message)
 }
 
-func commit(r *git.Repository, filename, name, email, message string) error {
+func commit(repo *Repository, filename, name, email, message string) error {
+	r := repo.r
 	worktree, err := r.Worktree()
 	if err != nil {
 		return err
@@ -125,7 +162,7 @@ func commit(r *git.Repository, filename, name, email, message string) error {
 		return err
 	}
 
-	fmt.Println(obj)
+	logrus.Infof("commit message for %s:%s", repo.name, obj)
 	return err
 }
 

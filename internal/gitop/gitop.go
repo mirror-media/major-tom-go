@@ -95,6 +95,38 @@ func (repo *Repository) AddFile(filenamePath string) error {
 	return err
 }
 
+// GetHeadHash hard reset the worktree to the commit to clear changes
+func (repo *Repository) GetHeadHash() (plumbing.Hash, error) {
+	repo.locker.Lock()
+	defer repo.locker.Unlock()
+
+	head, err := repo.r.Head()
+	if err != nil {
+		return plumbing.Hash{}, err
+	}
+
+	return head.Hash(), nil
+}
+
+// HardResetToCommit hard reset the worktree to the commit to clear changes
+func (repo *Repository) HardResetToCommit(commit plumbing.Hash) error {
+	repo.locker.Lock()
+	defer repo.locker.Unlock()
+	worktree, err := repo.r.Worktree()
+	if err != nil {
+		return err
+	}
+
+	err = worktree.Reset(&git.ResetOptions{
+		Commit: commit,
+		Mode:   git.HardReset,
+	})
+
+	logrus.Warn("repo is hard reset to head")
+
+	return err
+}
+
 // Commit with username as slack caller name annotated by (Major Tom)
 func (repo *Repository) Commit(filename, caller, message string) error {
 	repo.locker.Lock()

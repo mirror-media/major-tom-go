@@ -20,7 +20,7 @@ type CMD struct {
 }
 
 // Run perform operation per cmd and txt. ctx is expected to have a response channel
-func Run(ctx context.Context, clusterConfigs config.K8S, slashcmd string, txt string) (messages []string, err error) {
+func Run(ctx context.Context, clusterConfigs config.K8S, slashcmd, txt, caller string) (messages []string, err error) {
 	if slashcmd != ACCEPTED_SLASHCMD {
 		return []string{"call help"}, errors.Errorf("%s is not a supported slash command", slashcmd)
 	}
@@ -36,6 +36,8 @@ func Run(ctx context.Context, clusterConfigs config.K8S, slashcmd string, txt st
 		messages, err = command.List(ctx, clusterConfigs, txtParts[1:])
 	case "info":
 		messages, err = command.Info(ctx, clusterConfigs, txtParts[1:])
+	case "deploy":
+		messages, err = command.Deploy(ctx, clusterConfigs, txtParts[1:], caller)
 	default:
 		// TODO send help
 		messages = []string{"call help"}

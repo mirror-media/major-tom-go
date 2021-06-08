@@ -11,6 +11,7 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/mirror-media/major-tom-go/v2/config"
+	"github.com/mirror-media/major-tom-go/v2/internal/command"
 	"github.com/mirror-media/major-tom-go/v2/internal/slashcommand"
 	"github.com/sirupsen/logrus"
 	"github.com/slack-go/slack"
@@ -65,6 +66,7 @@ func main() {
 	ctx := context.Background()
 
 	clusterConfigs := cfg.ClusterConfigs
+	command.DeployWorker.Init()
 	go func() {
 		for evt := range client.Events {
 			select {
@@ -147,7 +149,7 @@ func main() {
 
 					client.Ack(*evt.Request, payload)
 
-					messages, err := slashcommand.Run(ctx, clusterConfigs, cmd.Command, cmd.Text)
+					messages, err := slashcommand.Run(ctx, clusterConfigs, cmd.Command, cmd.Text, cmd.UserName)
 					if messages == nil {
 						messages = []string{}
 					}

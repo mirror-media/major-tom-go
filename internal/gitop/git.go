@@ -1,13 +1,14 @@
 package gitop
 
 import (
+	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/storage/memory"
 	log "github.com/sirupsen/logrus"
 )
 
 func cloneGitRepo(opt git.CloneOptions) (*git.Repository, error) {
-	r, err := git.Clone(memory.NewStorage(), nil, &opt)
+	r, err := git.Clone(memory.NewStorage(), memfs.New(), &opt)
 
 	if err != nil {
 		return nil, err

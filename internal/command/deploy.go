@@ -39,6 +39,20 @@ type Deployment struct {
 
 var deployChannel = make(chan Deployment, 64)
 
+// Deploy certain configuration to a service. textParts in interpreted as [project, stage, service, ...cfg:arg]
+func Deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, caller string) (messages []string, err error) {
+	ch := make(chan CommandResponse)
+	deployChannel <- Deployment{
+		ctx:            context.WithValue(ctx, mjcontext.ResponseChannel, ch),
+		clusterConfigs: clusterConfigs,
+		textParts:      textParts,
+		caller:         caller,
+	}
+
+	commandResponse := <-ch
+	return commandResponse.Messages, commandResponse.Error
+}
+
 type DeployWorker struct {
 	sync.Once
 }

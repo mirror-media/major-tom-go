@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/mirror-media/major-tom-go/v2/config"
@@ -27,6 +28,28 @@ var valuesConfig = map[string]yamlCFG{
 	"pods":        yamlCFG{path: "replicacount", valueType: "int"},
 	"maxPods":     yamlCFG{path: "autoscaling.maxReplicas", valueType: "int"},
 	"minPods":     yamlCFG{path: "autoscaling.minReplicas", valueType: "int"},
+}
+
+type Deployment struct {
+	ctx            context.Context
+	clusterConfigs config.K8S
+	textParts      []string
+	caller         string
+}
+
+var deployChannel = make(chan Deployment, 64)
+
+type DeployWorker struct {
+	sync.Once
+}
+
+func (w *DeployWorker) Init() {
+	w.Do(func() {
+		for {
+			deployment := <-deployChannel
+			deploy(deployment.ctx, deployment.clusterConfigs, deployment.textParts, deployment.caller)
+		}
+	})
 }
 
 // deploy deploy certain configuration to a service. textParts in interpreted as [project, stage, service, ...cfg:arg]

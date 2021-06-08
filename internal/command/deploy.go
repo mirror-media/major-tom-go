@@ -53,12 +53,14 @@ func Deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, 
 	return commandResponse.Messages, commandResponse.Error
 }
 
-type DeployWorker struct {
-	sync.Once
+type deployWorker struct {
+	once sync.Once
 }
 
-func (w *DeployWorker) Init() {
-	w.Do(func() {
+var DeployWorker deployWorker
+
+func (w *deployWorker) Init() {
+	go w.once.Do(func() {
 		for {
 			deployment := <-deployChannel
 			deploy(deployment.ctx, deployment.clusterConfigs, deployment.textParts, deployment.caller)

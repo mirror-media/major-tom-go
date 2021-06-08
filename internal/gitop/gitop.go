@@ -162,7 +162,7 @@ func commit(repo *Repository, filename, name, email, message string) error {
 		return err
 	}
 
-	fmt.Println(obj)
+	logrus.Infof("commit message for %s:%s", repo.name, obj)
 	return err
 }
 

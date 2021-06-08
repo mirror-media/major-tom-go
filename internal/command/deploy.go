@@ -42,16 +42,24 @@ var deployChannel = make(chan Deployment, 64)
 
 // Deploy certain configuration to a service. textParts in interpreted as [project, stage, service, ...cfg:arg]
 func Deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, caller string) (messages []string, err error) {
+	timeout := 5 * time.Minute
 	ch := make(chan response)
+	newCtx := context.WithValue(ctx, mjcontext.ResponseChannel, ch)
+	newCtx, cancelFn := context.WithTimeout(newCtx, timeout)
+	defer cancelFn()
 	deployChannel <- Deployment{
-		ctx:            context.WithValue(ctx, mjcontext.ResponseChannel, ch),
+		ctx:            newCtx,
 		clusterConfigs: clusterConfigs,
 		textParts:      textParts,
 		caller:         caller,
 	}
 
-	commandResponse := <-ch
-	return commandResponse.Messages, commandResponse.Error
+	select {
+	case commandResponse := <-ch:
+		return commandResponse.Messages, commandResponse.Error
+	case <-newCtx.Done():
+		return nil, errors.Errorf("\"%s\" command has timeouted(%d)", strings.Join(textParts, " "), timeout.Minutes())
+	}
 }
 
 type deployWorker struct {

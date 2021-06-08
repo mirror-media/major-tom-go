@@ -132,7 +132,7 @@ func (repo *Repository) Commit(filename, caller, message string) error {
 	repo.locker.Lock()
 	defer repo.locker.Unlock()
 	// TODO extract email and bot name as configuration
-	return commit(repo, filename, fmt.Sprintf("%s(%s)", caller, "Major Tom"), "mnews@mnews.tw", message)
+	return commit(repo, filename, fmt.Sprintf("%s(%s)", "Major Tom", caller), "mnews@mnews.tw", message)
 }
 
 func commit(repo *Repository, filename, name, email, message string) error {

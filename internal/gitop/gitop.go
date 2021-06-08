@@ -196,9 +196,7 @@ func getRepository(project string) (repo *Repository, err error) {
 		}
 		repo.authMethod = sshMethod
 		opt := git.CloneOptions{
-			Auth: repo.authMethod,
-			// Set depth to 1 because we only need the HEAD
-			Depth:         1,
+			Auth:          repo.authMethod,
 			ReferenceName: plumbing.NewBranchReferenceName(config["branch"]),
 			SingleBranch:  true,
 			URL:           config["url"],

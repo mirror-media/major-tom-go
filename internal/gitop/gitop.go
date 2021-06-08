@@ -39,24 +39,28 @@ var gitConfig = map[string]map[string]string{
 }
 
 type Repository struct {
-	config map[string]string
-	once   *sync.Once
-	r      *git.Repository
-	locker sync.Mutex
+	authMethod ssh.AuthMethod
+	config     map[string]string
+	once       *sync.Once
+	r          *git.Repository
+	locker     *sync.Mutex
 }
 
 var mm, tv, readr = &Repository{
 	config: gitConfig["mm"],
 	once:   &sync.Once{},
 	r:      nil,
+	locker: &sync.Mutex{},
 }, &Repository{
 	config: gitConfig["tv"],
 	once:   &sync.Once{},
 	r:      nil,
+	locker: &sync.Mutex{},
 }, &Repository{
 	config: gitConfig["readr"],
 	once:   &sync.Once{},
 	r:      nil,
+	locker: &sync.Mutex{},
 }
 
 // GetFile will return an io.ReadWriter with read and write permission
@@ -86,7 +90,7 @@ func (repo *Repository) AddFile(filenamePath string) error {
 
 	_, err = worktree.Add(filenamePath)
 
-	logrus.Infof("$s is added to the staging area", filenamePath)
+	logrus.Infof("%s is added to the staging area", filenamePath)
 
 	return err
 }
@@ -122,7 +126,7 @@ func commit(r *git.Repository, filename, name, email, message string) error {
 	}
 
 	fmt.Println(obj)
-	return nil
+	return err
 }
 
 func (repo *Repository) Pull() error {
@@ -132,17 +136,27 @@ func (repo *Repository) Pull() error {
 	if err != nil {
 		return err
 	}
-	return worktree.Pull(&git.PullOptions{
+	err = worktree.Pull(&git.PullOptions{
+		Auth:          repo.authMethod,
 		ReferenceName: plumbing.NewBranchReferenceName(repo.config["branch"]),
 		RemoteName:    "origin",
 		SingleBranch:  true,
 	})
+
+	if err.Error() == "already up-to-date" {
+		logrus.Infof("pulling repo, but it's already up-to-date")
+		err = nil
+	}
+
+	return err
 }
 
 func (repo *Repository) Push() error {
 	repo.locker.Lock()
 	defer repo.locker.Unlock()
-	return repo.r.Push(&git.PushOptions{})
+	return repo.r.Push(&git.PushOptions{
+		Auth: repo.authMethod,
+	})
 }
 
 func GetRepository(project string) (r *Repository, err error) {
@@ -163,11 +177,10 @@ func getRepository(project string) (repo *Repository, err error) {
 		return nil, errors.New("wrong project")
 	}
 
-	repo.locker.Lock()
-	defer repo.locker.Unlock()
-
 	// Init git repo
 	repo.once.Do(func() {
+		repo.locker.Lock()
+		defer repo.locker.Unlock()
 		// Get the config according to the project
 		config := repo.config
 		key, errRead := os.ReadFile(config["sshKeyPath"])
@@ -181,8 +194,9 @@ func getRepository(project string) (repo *Repository, err error) {
 			err = errors.Wrap(errSSH, "creating sshMethod from key failed")
 			return
 		}
+		repo.authMethod = sshMethod
 		opt := git.CloneOptions{
-			Auth: sshMethod,
+			Auth: repo.authMethod,
 			// Set depth to 1 because we only need the HEAD
 			Depth:         1,
 			ReferenceName: plumbing.NewBranchReferenceName(config["branch"]),

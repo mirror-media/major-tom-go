@@ -40,7 +40,7 @@ func Test_deploy(t *testing.T) {
 				caller:         "@tester",
 				clusterConfigs: clusterConfigs,
 				ctx:            ctx,
-				textParts:      []string{"tv", "prod", "yt-relay", "tag:11", "pods:23"},
+				textParts:      []string{"tv", "prod", "yt-relay", "image:11", "pods:23"},
 			},
 			wantMessages: []string{"release(yt-relay/prod): released by @tester", "", "Set image.tag to 11", "Set replicacount to 23", ""},
 			wantErr:      false,

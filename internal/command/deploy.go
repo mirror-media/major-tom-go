@@ -58,7 +58,7 @@ func Deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, 
 	case commandResponse := <-ch:
 		return commandResponse.Messages, commandResponse.Error
 	case <-newCtx.Done():
-		return nil, errors.Errorf("\"%s\" command has timeouted(%d)", strings.Join(textParts, " "), timeout.Minutes())
+		return nil, errors.Errorf("\"%s\" command has timeouted(%f)", strings.Join(textParts, " "), timeout.Minutes())
 	}
 }
 

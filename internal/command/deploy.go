@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/mirror-media/major-tom-go/v2/config"
@@ -41,7 +42,7 @@ var deployChannel = make(chan Deployment, 64)
 
 // Deploy certain configuration to a service. textParts in interpreted as [project, stage, service, ...cfg:arg]
 func Deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, caller string) (messages []string, err error) {
-	ch := make(chan CommandResponse)
+	ch := make(chan response)
 	deployChannel <- Deployment{
 		ctx:            context.WithValue(ctx, mjcontext.ResponseChannel, ch),
 		clusterConfigs: clusterConfigs,
@@ -72,7 +73,7 @@ func (w *deployWorker) Init() {
 func deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, caller string) {
 	var messages []string
 	var err error
-	ch := ctx.Value(mjcontext.ResponseChannel).(chan CommandResponse)
+	ch := ctx.Value(mjcontext.ResponseChannel).(chan response)
 	switch len(textParts) {
 	// Deploy needs cfg:arg to operation on
 	case 0, 1, 2, 3:
@@ -125,7 +126,7 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, 
 		}
 		// validation result
 		if err != nil {
-			ch <- CommandResponse{
+			ch <- response{
 				Messages: messages,
 				Error:    err,
 			}
@@ -136,7 +137,7 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, 
 		f, err := repo.GetFile(valuesFilePath)
 		defer f.Close()
 		if err != nil {
-			ch <- CommandResponse{
+			ch <- response{
 				Messages: messages,
 				Error:    errors.Wrap(err, fmt.Sprintf("getting %s has error", valuesFilePath)),
 			}
@@ -148,7 +149,7 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, 
 		viper.SetConfigType("yaml")
 		err = viper.ReadConfig(f)
 		if err != nil {
-			ch <- CommandResponse{
+			ch <- response{
 				Messages: messages,
 				Error:    errors.Wrap(err, fmt.Sprintf("parsing %s has error", valuesFilePath)),
 			}
@@ -162,7 +163,7 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, 
 
 		b, err := yaml.Marshal(c)
 		if err != nil {
-			ch <- CommandResponse{
+			ch <- response{
 				Messages: messages,
 				Error:    errors.Wrap(err, fmt.Sprintf("marshalling %s has error", valuesFilePath)),
 			}
@@ -172,7 +173,7 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, 
 		// f.Close() is deferred already
 		err = f.Truncate(0)
 		if err != nil {
-			ch <- CommandResponse{
+			ch <- response{
 				Messages: messages,
 				Error:    errors.Wrap(err, fmt.Sprintf("clean file before writing to %s has error", valuesFilePath)),
 			}
@@ -186,7 +187,7 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, 
 			return err
 		}()
 		if err != nil {
-			ch <- CommandResponse{
+			ch <- response{
 				Messages: messages,
 				Error:    errors.Wrap(err, fmt.Sprintf("writing to %s has error", valuesFilePath)),
 			}
@@ -199,7 +200,7 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, 
 
 		repo.AddFile(valuesFilePath)
 		if err != nil {
-			ch <- CommandResponse{
+			ch <- response{
 				Messages: messages,
 				Error:    errors.Wrap(err, fmt.Sprintf("adding %s to staging area has error", valuesFilePath)),
 			}
@@ -220,7 +221,7 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, 
 
 		err = repo.Commit(valuesFilePath, caller, message)
 		if err != nil {
-			ch <- CommandResponse{
+			ch <- response{
 				Messages: append([]string{"this operation failed"}, messages...),
 				Error:    errors.Wrap(err, fmt.Sprintf("commits for project(%s) has error", project)),
 			}
@@ -229,7 +230,7 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, 
 		}
 		err = repo.Push()
 		if err != nil {
-			ch <- CommandResponse{
+			ch <- response{
 				Messages: append([]string{"this operation failed"}, messages...),
 				Error:    errors.Wrap(err, fmt.Sprintf("push commits for project(%s) has error", project)),
 			}
@@ -238,7 +239,7 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, 
 		}
 		messages = strings.Split(message, "\n")
 	}
-	ch <- CommandResponse{
+	ch <- response{
 		Messages: messages,
 		Error:    err,
 	}

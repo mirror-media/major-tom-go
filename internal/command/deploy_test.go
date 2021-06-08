@@ -10,7 +10,7 @@ import (
 )
 
 func Test_deploy(t *testing.T) {
-	ch := make(chan CommandResponse, 100)
+	ch := make(chan response, 100)
 	ctx := context.WithValue(context.TODO(), mjcontext.ResponseChannel, ch)
 	type args struct {
 		ctx            context.Context
@@ -49,7 +49,7 @@ func Test_deploy(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			deploy(tt.args.ctx, tt.args.clusterConfigs, tt.args.textParts, tt.args.caller)
-			ch := tt.args.ctx.Value(mjcontext.ResponseChannel).(chan CommandResponse)
+			ch := tt.args.ctx.Value(mjcontext.ResponseChannel).(chan response)
 			gotResponse := <-ch
 			err := gotResponse.Error
 			if (err != nil) != tt.wantErr {

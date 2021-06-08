@@ -2,11 +2,11 @@ package gitop
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"sync"
 	"time"
 
+	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
@@ -63,8 +63,8 @@ var mm, tv, readr = &Repository{
 	locker: &sync.Mutex{},
 }
 
-// GetFile will return an io.ReadWriter with read and write permission
-func (repo *Repository) GetFile(filenamePath string) (io.ReadWriter, error) {
+// GetFile will return an billy.Filewith read and write permission
+func (repo *Repository) GetFile(filenamePath string) (billy.File, error) {
 	repo.locker.Lock()
 	defer repo.locker.Unlock()
 	worktree, err := repo.r.Worktree()

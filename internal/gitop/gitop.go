@@ -146,6 +146,8 @@ func (repo *Repository) Pull() error {
 	if err.Error() == "already up-to-date" {
 		logrus.Infof("pulling repo, but it's already up-to-date")
 		err = nil
+	} else if err != nil {
+		err = errors.Wrap(err, "pulling has error")
 	}
 
 	return err

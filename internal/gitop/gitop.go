@@ -42,21 +42,24 @@ type Repository struct {
 	config map[string]string
 	once   *sync.Once
 	r      *git.Repository
-	locker sync.Mutex
+	locker *sync.Mutex
 }
 
 var mm, tv, readr = &Repository{
 	config: gitConfig["mm"],
 	once:   &sync.Once{},
 	r:      nil,
+	locker: &sync.Mutex{},
 }, &Repository{
 	config: gitConfig["tv"],
 	once:   &sync.Once{},
 	r:      nil,
+	locker: &sync.Mutex{},
 }, &Repository{
 	config: gitConfig["readr"],
 	once:   &sync.Once{},
 	r:      nil,
+	locker: &sync.Mutex{},
 }
 
 // GetFile will return an io.ReadWriter with read and write permission

@@ -90,7 +90,7 @@ func (repo *Repository) AddFile(filenamePath string) error {
 
 	_, err = worktree.Add(filenamePath)
 
-	logrus.Infof("$s is added to the staging area", filenamePath)
+	logrus.Infof("%s is added to the staging area", filenamePath)
 
 	return err
 }

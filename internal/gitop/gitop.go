@@ -177,11 +177,10 @@ func getRepository(project string) (repo *Repository, err error) {
 		return nil, errors.New("wrong project")
 	}
 
-	repo.locker.Lock()
-	defer repo.locker.Unlock()
-
 	// Init git repo
 	repo.once.Do(func() {
+		repo.locker.Lock()
+		defer repo.locker.Unlock()
 		// Get the config according to the project
 		config := repo.config
 		key, errRead := os.ReadFile(config["sshKeyPath"])

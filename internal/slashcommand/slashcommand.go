@@ -37,7 +37,7 @@ func Run(ctx context.Context, clusterConfigs config.K8S, slashcmd, txt, caller s
 	case "info":
 		messages, err = command.Info(ctx, clusterConfigs, txtParts[1:])
 	case "deploy":
-		messages, err = command.Deploy(ctx, clusterConfigs, txtParts[1:], caller)
+		messages, err = command.Deploy(ctx, clusterConfigs, txtParts[1:], "@"+caller)
 	default:
 		// TODO send help
 		messages = []string{"call help"}

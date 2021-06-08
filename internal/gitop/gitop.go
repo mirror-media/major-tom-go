@@ -126,7 +126,7 @@ func commit(r *git.Repository, filename, name, email, message string) error {
 	}
 
 	fmt.Println(obj)
-	return nil
+	return err
 }
 
 func (repo *Repository) Pull() error {
@@ -136,12 +136,19 @@ func (repo *Repository) Pull() error {
 	if err != nil {
 		return err
 	}
-	return worktree.Pull(&git.PullOptions{
+	err = worktree.Pull(&git.PullOptions{
 		Auth:          repo.authMethod,
 		ReferenceName: plumbing.NewBranchReferenceName(repo.config["branch"]),
 		RemoteName:    "origin",
 		SingleBranch:  true,
 	})
+
+	if err.Error() == "already up-to-date" {
+		logrus.Infof("pulling repo, but it's already up-to-date")
+		err = nil
+	}
+
+	return err
 }
 
 func (repo *Repository) Push() error {

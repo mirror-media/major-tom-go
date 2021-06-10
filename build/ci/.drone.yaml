@@ -30,6 +30,21 @@ steps:
       event:
         - push
 
+  - name: prepareEnv
+    pull: if-not-exists
+    image: gcr.io/mirror-tv-275709/drone-cloud-sdk:mirror-tv
+    commands:
+      - ln -s ./build/package/Dockerfile ./Dockerfile
+    environment:
+      GOOGLE_CREDENTIALS:
+        from_secret: google_credentials
+    when:
+      branch:
+        - dev
+        - master
+      event:
+        - push
+
   - name: buildThenPublish
     pull: if-not-exists
     image: plugins/gcr
@@ -43,7 +58,6 @@ steps:
     when:
       branch:
         - dev
-        - stag
         - master
       event:
         - push

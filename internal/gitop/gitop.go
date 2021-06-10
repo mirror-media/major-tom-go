@@ -18,24 +18,24 @@ import (
 // TODO move to configuration
 // FIXME we need proper path
 var gitConfig = map[string]map[string]string{
-	"mm": {
-		"branch":     "master",
-		"sshKeyPath": "/Users/chiu/dev/mtv/major-tom-go/configs/identity",
-		"sshKeyUser": "mnews@mnews.tw",
-		"url":        "ssh://mnews@mnews.tw@source.developers.google.com:2022/p/mirrormedia-1470651750304/r/helm",
-	},
+	// "mm": {
+	// 	"branch":     "master",
+	// 	"sshKeyPath": "/major-tom/configs/ssh/identity",
+	// 	"sshKeyUser": "mnews@mnews.tw",
+	// 	"url":        "ssh://mnews@mnews.tw@source.developers.google.com:2022/p/mirrormedia-1470651750304/r/helm",
+	// },
 	"tv": {
 		"branch":     "master",
-		"sshKeyPath": "/Users/chiu/dev/mtv/major-tom-go/configs/identity",
+		"sshKeyPath": "/major-tom/configs/ssh/identity",
 		"sshKeyUser": "mnews@mnews.tw",
 		"url":        "ssh://source.developers.google.com:2022/p/mirror-tv-275709/r/helm",
 	},
-	"readr": {
-		"branch":     "master",
-		"sshKeyPath": "/Users/chiu/dev/mtv/major-tom-go/configs/identity",
-		"sshKeyUser": "mnews@mnews.tw",
-		"url":        "ssh://mnews@mnews.tw@source.developers.google.com:2022/p/mirrormedia-1470651750304/r/helm",
-	},
+	// "readr": {
+	// 	"branch":     "master",
+	// 	"sshKeyPath": "/major-tom/configs/ssh/identity",
+	// 	"sshKeyUser": "mnews@mnews.tw",
+	// 	"url":        "ssh://mnews@mnews.tw@source.developers.google.com:2022/p/mirrormedia-1470651750304/r/helm-readr",
+	// },
 }
 
 type Repository struct {

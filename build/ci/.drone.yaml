@@ -1,0 +1,78 @@
+---
+type: docker
+kind: pipeline
+name: default
+
+platform:
+  os: linux
+  arch: amd64
+
+workspace:
+  path: /major-tom-go
+
+steps:
+  - name: startSlack
+    pull: if-not-exists
+    image: plugins/slack
+    settings:
+      channel: jenkins
+      icon_url: https://avatars2.githubusercontent.com/u/2181346?s=200&v=4
+      template: >
+        *start* building *{{repo.name}}* <${DRONE_BUILD_LINK}|#{{build.number}}>. Someone gave *{{build.branch}}* a little push.
+      username: drone
+    environment:
+      SLACK_WEBHOOK:
+        from_secret: slack_webhook
+    when:
+      branch:
+        - dev
+        - master
+      event:
+        - push
+
+  - name: buildThenPublish
+    pull: if-not-exists
+    image: plugins/gcr
+    settings:
+      repo: mirrormedia-1470651750304/${DRONE_REPO_NAME}
+      tag: ${DRONE_BRANCH}_${DRONE_COMMIT_AUTHOR}_${DRONE_BUILD_NUMBER}
+    environment:
+      DOCKER_LAUNCH_DEBUG: "true"
+      GOOGLE_CREDENTIALS:
+        from_secret: google_credentials
+    when:
+      branch:
+        - dev
+        - stag
+        - master
+      event:
+        - push
+
+  - name: finishSlack
+    pull: if-not-exists
+    image: plugins/slack
+    settings:
+      channel: jenkins
+      icon_url: https://avatars2.githubusercontent.com/u/2181346?s=200&v=4
+      template: >
+        {{#success build.status}}
+          *success* ${DRONE_REPO_NAME}:${DRONE_BRANCH}_${DRONE_COMMIT_AUTHOR}_${DRONE_BUILD_NUMBER} was well served.
+        {{else}}
+          Houston, we have a problem. Build <${DRONE_BUILD_LINK}|#{{build.number}}> failed.
+        {{/success}}
+      username: drone
+    environment:
+      SLACK_WEBHOOK:
+        from_secret: slack_webhook
+    when:
+      branch:
+        - dev
+        - master
+      event:
+        - push
+      status:
+        - success
+        - failure
+
+image_pull_secrets:
+  - gcr_docker_config

@@ -14,6 +14,7 @@ import (
 	mjcontext "github.com/mirror-media/major-tom-go/v2/internal/context"
 	"github.com/mirror-media/major-tom-go/v2/internal/gitop"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
 )
@@ -144,22 +145,25 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, 
 		valuesFilePath := fmt.Sprintf("%s/values-%s.yaml", service, stage)
 		f, err := repo.GetFile(valuesFilePath)
 		if err != nil {
+			err = errors.Wrap(err, fmt.Sprintf("getting %s has error", valuesFilePath))
+			logrus.Warn(err)
 			ch <- response{
 				Messages: messages,
-				Error:    errors.Wrap(err, fmt.Sprintf("getting %s has error", valuesFilePath)),
+				Error:    err,
 			}
 			return
 		}
-		defer f.Close()
 
 		// operation starts here. worktree needs to be cleaned if disaster happens
 		viper := viper.New()
 		viper.SetConfigType("yaml")
 		err = viper.ReadConfig(f)
 		if err != nil {
+			err = errors.Wrap(err, fmt.Sprintf("parsing %s has error", valuesFilePath))
+			logrus.Warn(err)
 			ch <- response{
 				Messages: messages,
-				Error:    errors.Wrap(err, fmt.Sprintf("parsing %s has error", valuesFilePath)),
+				Error:    err,
 			}
 			_ = hardResetFn()
 			return
@@ -178,8 +182,9 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, 
 			_ = hardResetFn()
 			return
 		}
-		// f.Close() is deferred already
+
 		err = f.Truncate(0)
+		f.Close()
 		if err != nil {
 			ch <- response{
 				Messages: messages,
@@ -193,8 +198,8 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, 
 			if err != nil {
 				return err
 			}
-			defer f.Close()
 			_, err = f.Write(b)
+			f.Close()
 			return err
 		}()
 		if err != nil {

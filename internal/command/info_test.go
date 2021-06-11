@@ -47,11 +47,7 @@ func TestInfo(t *testing.T) {
 				clusterConfigs: clusterConfigs,
 				textParts:      []string{"tv", "prod", "yt-relay"},
 			},
-			wantMessages: []string{`yt-relay
-		ImageTag: master__59
-		Available pods: 1
-		Ready pods: 1
-		Updated pods: 1`},
+			wantMessages: []string{"yt-relay\n\tImageTag: master__59\n\tAvailable pods: 1\n\tReady pods: 1\n\tUpdated pods: 1"},
 		},
 	}
 	for _, tt := range tests {

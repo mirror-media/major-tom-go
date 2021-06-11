@@ -143,7 +143,6 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, 
 
 		valuesFilePath := fmt.Sprintf("%s/values-%s.yaml", service, stage)
 		f, err := repo.GetFile(valuesFilePath)
-		defer f.Close()
 		if err != nil {
 			ch <- response{
 				Messages: messages,
@@ -151,6 +150,7 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, 
 			}
 			return
 		}
+		defer f.Close()
 
 		// operation starts here. worktree needs to be cleaned if disaster happens
 		viper := viper.New()
@@ -189,7 +189,10 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, 
 			return
 		}
 		err = func() error {
-			f, _ = repo.GetFile(valuesFilePath)
+			f, err = repo.GetFile(valuesFilePath)
+			if err != nil {
+				return err
+			}
 			defer f.Close()
 			_, err = f.Write(b)
 			return err

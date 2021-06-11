@@ -75,7 +75,7 @@ func (repo *Repository) GetFile(filenamePath string) (billy.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	f, err := worktree.Filesystem.OpenFile(filenamePath, 0666, os.ModePerm)
+	f, err := worktree.Filesystem.OpenFile(filenamePath, os.O_WRONLY, os.ModePerm)
 	if err != nil {
 		return nil, err
 	}

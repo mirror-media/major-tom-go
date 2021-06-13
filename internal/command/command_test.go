@@ -1,7 +1,7 @@
 // Package command implement the operation controller
 package command
 
-import "github.com/mirror-media/major-tom-go/v2/config"
+import "github.com/mirror-media/major-tom-go/config"
 
 // FIXME we need proper test path
 var clusterConfigs = config.K8S{

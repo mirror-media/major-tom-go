@@ -2,7 +2,7 @@
 package k8sop
 
 import (
-	"github.com/mirror-media/major-tom-go/v2/config"
+	"github.com/mirror-media/major-tom-go/config"
 	"github.com/pkg/errors"
 )
 

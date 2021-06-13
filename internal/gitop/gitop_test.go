@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
-	"github.com/mirror-media/major-tom-go/v2/config"
+	"github.com/mirror-media/major-tom-go/config"
 )
 
 func TestRepository_GetFile(t *testing.T) {

@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/mirror-media/major-tom-go/v2/config"
-	mjcontext "github.com/mirror-media/major-tom-go/v2/internal/context"
-	"github.com/mirror-media/major-tom-go/v2/internal/gitop"
+	"github.com/mirror-media/major-tom-go/config"
+	mjcontext "github.com/mirror-media/major-tom-go/internal/context"
+	"github.com/mirror-media/major-tom-go/internal/gitop"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"

@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/mirror-media/major-tom-go/v2/config"
-	mjcontext "github.com/mirror-media/major-tom-go/v2/internal/context"
+	"github.com/mirror-media/major-tom-go/config"
+	mjcontext "github.com/mirror-media/major-tom-go/internal/context"
 )
 
 func Test_deploy(t *testing.T) {

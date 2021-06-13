@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/mirror-media/major-tom-go/v2/config"
-	"github.com/mirror-media/major-tom-go/v2/internal/k8sop"
+	"github.com/mirror-media/major-tom-go/config"
+	"github.com/mirror-media/major-tom-go/internal/k8sop"
 	"github.com/pkg/errors"
 )
 

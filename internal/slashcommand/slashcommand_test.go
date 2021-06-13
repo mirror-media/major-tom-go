@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/mirror-media/major-tom-go/v2/config"
-	"github.com/mirror-media/major-tom-go/v2/internal/command"
+	"github.com/mirror-media/major-tom-go/config"
+	"github.com/mirror-media/major-tom-go/internal/command"
 )
 
 // FIXME we need proper test path

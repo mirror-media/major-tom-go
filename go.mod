@@ -1,4 +1,4 @@
-module github.com/mirror-media/major-tom-go/v2
+module github.com/mirror-media/major-tom-go
 
 go 1.16
 

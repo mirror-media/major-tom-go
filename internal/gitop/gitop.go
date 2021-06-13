@@ -11,61 +11,48 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
+	"github.com/mirror-media/major-tom-go/v2/config"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
-
-// TODO move to configuration
-// FIXME we need proper path
-var gitConfig = map[string]map[string]string{
-	// "mm": {
-	// 	"branch":     "master",
-	// 	"sshKeyPath": "/major-tom/configs/ssh/identity",
-	// 	"sshKeyUser": "mnews@mnews.tw",
-	// 	"url":        "ssh://mnews@mnews.tw@source.developers.google.com:2022/p/mirrormedia-1470651750304/r/helm",
-	// },
-	"tv": {
-		"branch":     "master",
-		"sshKeyPath": "/major-tom/configs/ssh/identity",
-		"sshKeyUser": "mnews@mnews.tw",
-		"url":        "ssh://source.developers.google.com:2022/p/mirror-tv-275709/r/helm",
-	},
-	// "readr": {
-	// 	"branch":     "master",
-	// 	"sshKeyPath": "/major-tom/configs/ssh/identity",
-	// 	"sshKeyUser": "mnews@mnews.tw",
-	// 	"url":        "ssh://mnews@mnews.tw@source.developers.google.com:2022/p/mirrormedia-1470651750304/r/helm-readr",
-	// },
-}
 
 type Repository struct {
 	authMethod ssh.AuthMethod
-	config     map[string]string
+	config     *config.GitConfig
 	name       string
 	once       *sync.Once
 	r          *git.Repository
 	locker     *sync.Mutex
 }
 
-var mm, tv, readr = &Repository{
-	config: gitConfig["mm"],
-	name:   "mirror weekly helm repo",
-	once:   &sync.Once{},
-	r:      nil,
-	locker: &sync.Mutex{},
-}, &Repository{
-	config: gitConfig["tv"],
+var tv = &Repository{
+	config: nil,
 	name:   "mirror tv helm repo",
 	once:   &sync.Once{},
 	r:      nil,
 	locker: &sync.Mutex{},
-}, &Repository{
-	config: gitConfig["readr"],
-	name:   "readr helm repo",
-	once:   &sync.Once{},
-	r:      nil,
-	locker: &sync.Mutex{},
 }
+
+// var mm, tv, readr = &Repository{
+// 	config: nil,
+// 	name:   "mirror weekly helm repo",
+// 	once:   &sync.Once{},
+// 	r:      nil,
+// 	locker: &sync.Mutex{},
+// }, &Repository{
+// 	config: nil,
+// 	name:   "mirror tv helm repo",
+// 	once:   &sync.Once{},
+// 	r:      nil,
+// 	locker: &sync.Mutex{},
+// }, &Repository{
+// 	config: nil,
+// 	name:   "readr helm repo",
+// 	once:   &sync.Once{},
+// 	r:      nil,
+// 	locker: &sync.Mutex{},
+// }
 
 // GetFile will return an billy.Filewith read and write permission
 func (repo *Repository) GetFile(filenamePath string) (billy.File, error) {
@@ -175,7 +162,7 @@ func (repo *Repository) Pull() error {
 	}
 	err = worktree.Pull(&git.PullOptions{
 		Auth:          repo.authMethod,
-		ReferenceName: plumbing.NewBranchReferenceName(repo.config["branch"]),
+		ReferenceName: plumbing.NewBranchReferenceName(repo.config.Branch),
 		RemoteName:    "origin",
 		SingleBranch:  true,
 	})
@@ -201,17 +188,25 @@ func (repo *Repository) Push() error {
 func GetRepository(project string) (r *Repository, err error) {
 
 	// Get the singleton repository according to the project
-	return getRepository(project)
+	return getRepository(config.Repository(project))
 }
 
-func getRepository(project string) (repo *Repository, err error) {
+func getRepository(project config.Repository) (repo *Repository, err error) {
+	gitConfigs, ok := viper.Get("gitConfigs").(map[string]config.GitConfig)
+	if !ok {
+		return nil, errors.New("cannot retrieve git config before getting git repositories")
+	}
+	var config config.GitConfig
 	switch project {
-	case "mm":
-		repo = mm
+	// case "mm":
+	// 	repo = mm
+	// config = gitConfigs["mm"]
 	case "tv":
 		repo = tv
-	case "readr":
-		repo = readr
+		config = gitConfigs["tv"]
+	// case "readr":
+	// 	repo = readr
+	// config = gitConfigs["readr"]
 	default:
 		return nil, errors.New("wrong project")
 	}
@@ -221,14 +216,14 @@ func getRepository(project string) (repo *Repository, err error) {
 		repo.locker.Lock()
 		defer repo.locker.Unlock()
 		// Get the config according to the project
-		config := repo.config
-		key, errRead := os.ReadFile(config["sshKeyPath"])
+		repo.config = &config
+		key, errRead := os.ReadFile(config.SSHKeyPath)
 		if errRead != nil {
 			err = errRead
 			err = errors.Wrap(errRead, "reading ssh key failed")
 			return
 		}
-		sshMethod, errSSH := ssh.NewPublicKeys(config["sshKeyUser"], key, "")
+		sshMethod, errSSH := ssh.NewPublicKeys(config.SSHKeyUser, key, "")
 		if errSSH != nil {
 			err = errors.Wrap(errSSH, "creating sshMethod from key failed")
 			return
@@ -236,9 +231,9 @@ func getRepository(project string) (repo *Repository, err error) {
 		repo.authMethod = sshMethod
 		opt := git.CloneOptions{
 			Auth:          repo.authMethod,
-			ReferenceName: plumbing.NewBranchReferenceName(config["branch"]),
+			ReferenceName: plumbing.NewBranchReferenceName(config.Branch),
 			SingleBranch:  true,
-			URL:           config["url"],
+			URL:           config.URL,
 		}
 		newGitRepo, errGitRepo := cloneGitRepo(opt)
 		if errGitRepo != nil {

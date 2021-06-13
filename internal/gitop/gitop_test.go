@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
+	"github.com/mirror-media/major-tom-go/v2/config"
 )
 
 func TestRepository_GetFile(t *testing.T) {
@@ -15,7 +16,7 @@ func TestRepository_GetFile(t *testing.T) {
 	}
 	type fields struct {
 		authMethod ssh.AuthMethod
-		config     map[string]string
+		config     *config.GitConfig
 		once       *sync.Once
 		r          *git.Repository
 		locker     *sync.Mutex
@@ -33,10 +34,16 @@ func TestRepository_GetFile(t *testing.T) {
 			name: "dev for tv",
 			fields: fields{
 				authMethod: repo.authMethod,
-				config:     gitConfig["tv"],
-				once:       repo.once,
-				r:          repo.r,
-				locker:     repo.locker,
+				config: &config.GitConfig{
+					Branch:        "test/majortom",
+					SSHKeyPath:    "Users/chiu/dev/mtv/major-tom-go/configs/ssh/identity",
+					SSHKeyUser:    "mnews@mnews.tw",
+					SSHKnownhosts: "/Users/chiu/dev/mtv/major-tom-go/configs/ssh/known_hosts",
+					URL:           "ssh://source.developers.google.com:2022/p/mirror-tv-275709/r/helm",
+				},
+				once:   repo.once,
+				r:      repo.r,
+				locker: repo.locker,
 			},
 			args: args{
 				filenamePath: "cms/values-prod.yaml",

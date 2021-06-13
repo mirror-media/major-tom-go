@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/mirror-media/major-tom-go/config"
-	"github.com/mirror-media/major-tom-go/internal/k8sop"
+	"github.com/mirror-media/major-tom-go/k8sop"
 	"github.com/pkg/errors"
 )
 

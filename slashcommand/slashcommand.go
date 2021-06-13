@@ -5,8 +5,8 @@ import (
 	"context"
 	"strings"
 
+	"github.com/mirror-media/major-tom-go/command"
 	"github.com/mirror-media/major-tom-go/config"
-	"github.com/mirror-media/major-tom-go/internal/command"
 
 	"github.com/pkg/errors"
 )

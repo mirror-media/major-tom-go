@@ -33,6 +33,7 @@ func TestRun(t *testing.T) {
 		ctx            context.Context
 		caller         string
 		clusterConfigs config.K8S
+		gitConfigs     map[config.Repository]config.GitConfig
 		cmd            string
 		txt            string
 	}
@@ -48,6 +49,7 @@ func TestRun(t *testing.T) {
 			args: args{
 				ctx:            context.TODO(),
 				clusterConfigs: clusterConfigs,
+				gitConfigs:     map[config.Repository]config.GitConfig{},
 				cmd:            "/mahjong-tom",
 				txt:            "list",
 			},
@@ -81,7 +83,7 @@ func TestRun(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotMessages, err := Run(tt.args.ctx, tt.args.clusterConfigs, tt.args.cmd, tt.args.txt, tt.args.caller)
+			gotMessages, err := Run(tt.args.ctx, tt.args.clusterConfigs, tt.args.gitConfigs, tt.args.cmd, tt.args.txt, tt.args.caller)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Run() error = %v, wantErr %v", err, tt.wantErr)
 				return

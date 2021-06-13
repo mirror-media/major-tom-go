@@ -149,7 +149,7 @@ func main() {
 
 					client.Ack(*evt.Request, payload)
 
-					messages, err := slashcommand.Run(ctx, clusterConfigs, cmd.Command, cmd.Text, cmd.UserName)
+					messages, err := slashcommand.Run(ctx, clusterConfigs, cfg.GitConfigs, cmd.Command, cmd.Text, cmd.UserName)
 					if messages == nil {
 						messages = []string{}
 					}

@@ -10,7 +10,17 @@ import (
 )
 
 func TestRepository_GetFile(t *testing.T) {
-	repo, err := GetRepository("tv")
+	// FIXME we need proper test config
+	gitConfigs := map[config.Repository]config.GitConfig{
+		"tv": config.GitConfig{
+			Branch:        "test/majortom",
+			SSHKeyPath:    "/Users/chiu/dev/mtv/major-tom-go/configs/ssh/identity",
+			SSHKeyUser:    "mnews@mnews.tw",
+			SSHKnownhosts: "/Users/chiu/dev/mtv/major-tom-go/configs/ssh/known_hosts",
+			URL:           "ssh://source.developers.google.com:2022/p/mirror-tv-275709/r/helm",
+		},
+	}
+	repo, err := GetRepository("tv", gitConfigs)
 	if err != nil {
 		t.Error(err)
 	}

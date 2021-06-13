@@ -14,7 +14,6 @@ import (
 	"github.com/mirror-media/major-tom-go/config"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 type Repository struct {
@@ -185,28 +184,28 @@ func (repo *Repository) Push() error {
 	})
 }
 
-func GetRepository(project string) (r *Repository, err error) {
+// FIXME
+// GetRepository implicitly implies project equals repository. This is not a good practice, and it should be fixed in a good manner.
+func GetRepository(project string, gitConfigs map[config.Repository]config.GitConfig) (r *Repository, err error) {
+
+	gitConfig, isExisting := gitConfigs[config.Repository(project)]
+	if !isExisting {
+		return nil, errors.Errorf("the git config doesn't exist for the project(%s)", project)
+	}
 
 	// Get the singleton repository according to the project
-	return getRepository(config.Repository(project))
+	return getRepository(config.Repository(project), gitConfig)
 }
 
-func getRepository(project config.Repository) (repo *Repository, err error) {
-	gitConfigs, ok := viper.Get("gitConfigs").(map[string]config.GitConfig)
-	if !ok {
-		return nil, errors.New("cannot retrieve git config before getting git repositories")
-	}
-	var config config.GitConfig
+func getRepository(project config.Repository, gitConfig config.GitConfig) (repo *Repository, err error) {
+
 	switch project {
 	// case "mm":
 	// 	repo = mm
-	// config = gitConfigs["mm"]
 	case "tv":
 		repo = tv
-		config = gitConfigs["tv"]
 	// case "readr":
 	// 	repo = readr
-	// config = gitConfigs["readr"]
 	default:
 		return nil, errors.New("wrong project")
 	}
@@ -216,14 +215,14 @@ func getRepository(project config.Repository) (repo *Repository, err error) {
 		repo.locker.Lock()
 		defer repo.locker.Unlock()
 		// Get the config according to the project
-		repo.config = &config
-		key, errRead := os.ReadFile(config.SSHKeyPath)
+		repo.config = &gitConfig
+		key, errRead := os.ReadFile(gitConfig.SSHKeyPath)
 		if errRead != nil {
 			err = errRead
 			err = errors.Wrap(errRead, "reading ssh key failed")
 			return
 		}
-		sshMethod, errSSH := ssh.NewPublicKeys(config.SSHKeyUser, key, "")
+		sshMethod, errSSH := ssh.NewPublicKeys(gitConfig.SSHKeyUser, key, "")
 		if errSSH != nil {
 			err = errors.Wrap(errSSH, "creating sshMethod from key failed")
 			return
@@ -237,9 +236,9 @@ func getRepository(project config.Repository) (repo *Repository, err error) {
 		repo.authMethod = sshMethod
 		opt := git.CloneOptions{
 			Auth:          repo.authMethod,
-			ReferenceName: plumbing.NewBranchReferenceName(config.Branch),
+			ReferenceName: plumbing.NewBranchReferenceName(gitConfig.Branch),
 			SingleBranch:  true,
-			URL:           config.URL,
+			URL:           gitConfig.URL,
 		}
 		newGitRepo, errGitRepo := cloneGitRepo(opt)
 		if errGitRepo != nil {

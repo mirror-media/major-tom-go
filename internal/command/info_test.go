@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/mirror-media/major-tom-go/config"
+	"github.com/mirror-media/major-tom-go/internal/test"
 )
 
 func TestInfo(t *testing.T) {
@@ -24,7 +25,7 @@ func TestInfo(t *testing.T) {
 			name: "ask for wrong project",
 			args: args{
 				ctx:            context.TODO(),
-				clusterConfigs: clusterConfigs,
+				clusterConfigs: test.ConfigTest.ClusterConfigs,
 				textParts:      []string{"mn"},
 			},
 			wantMessages: []string{"call help"},
@@ -34,7 +35,7 @@ func TestInfo(t *testing.T) {
 			name: "ask for wrong service",
 			args: args{
 				ctx:            context.TODO(),
-				clusterConfigs: clusterConfigs,
+				clusterConfigs: test.ConfigTest.ClusterConfigs,
 				textParts:      []string{"tv", "prod", "TaiwanNumberOne"},
 			},
 			wantMessages: []string{"call list"},
@@ -44,7 +45,7 @@ func TestInfo(t *testing.T) {
 			name: "ask for yt-relay",
 			args: args{
 				ctx:            context.TODO(),
-				clusterConfigs: clusterConfigs,
+				clusterConfigs: test.ConfigTest.ClusterConfigs,
 				textParts:      []string{"tv", "prod", "yt-relay"},
 			},
 			wantMessages: []string{"yt-relay\n\tImageTag: master__59\n\tAvailable pods: 1\n\tReady pods: 1\n\tUpdated pods: 1"},

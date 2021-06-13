@@ -7,28 +7,11 @@ import (
 
 	"github.com/mirror-media/major-tom-go/config"
 	"github.com/mirror-media/major-tom-go/internal/command"
+	"github.com/mirror-media/major-tom-go/internal/test"
 )
 
-// FIXME we need proper test path
-var clusterConfigs = config.K8S{
-	"mm": {
-		"prod":    "/Users/chiu/dev/mtv/major-tom-go/configs/config",
-		"staging": "/Users/chiu/dev/mtv/major-tom-go/configs/config",
-		"dev":     "/Users/chiu/dev/mtv/major-tom-go/configs/config",
-	},
-	"tv": {
-		"prod":    "/Users/chiu/dev/mtv/major-tom-go/configs/config",
-		"staging": "/Users/chiu/dev/mtv/major-tom-go/configs/config",
-		"dev":     "/Users/chiu/dev/mtv/major-tom-go/configs/config",
-	},
-	"readr": {
-		"prod": "/Users/chiu/dev/mtv/major-tom-go/configs/config",
-		"dev":  "/Users/chiu/dev/mtv/major-tom-go/configs/config",
-	},
-}
-
 func TestRun(t *testing.T) {
-	command.DeployWorker.Init()
+	command.DeployWorker.Init(test.GitConfigsTest)
 	type args struct {
 		ctx            context.Context
 		caller         string
@@ -48,8 +31,7 @@ func TestRun(t *testing.T) {
 			name: "wrong slashcommand",
 			args: args{
 				ctx:            context.TODO(),
-				clusterConfigs: clusterConfigs,
-				gitConfigs:     map[config.Repository]config.GitConfig{},
+				clusterConfigs: test.ConfigTest.ClusterConfigs,
 				cmd:            "/mahjong-tom",
 				txt:            "list",
 			},
@@ -61,29 +43,29 @@ func TestRun(t *testing.T) {
 			name: "list projects",
 			args: args{
 				ctx:            context.TODO(),
-				clusterConfigs: clusterConfigs,
+				clusterConfigs: test.ConfigTest.ClusterConfigs,
 				cmd:            "/major-tom",
 				txt:            "list",
 			},
-			wantMessages: []string{"The following projects are available: mm, readr, tv"},
+			wantMessages: []string{"The following projects are available: tv"},
 			wantErr:      false,
 		},
 		{
 			name: "deploy cms",
 			args: args{
 				ctx:            context.TODO(),
-				caller:         "@tester",
-				clusterConfigs: clusterConfigs,
+				caller:         "tester",
+				clusterConfigs: test.ConfigTest.ClusterConfigs,
 				cmd:            "/major-tom",
-				txt:            "deploy tv prod cms pods:3 image:imageTag maxPods:4 minPods:1 autoScaling:true",
+				txt:            "deploy tv prod cms pods:2 image:imageTag maxPods:4 minPods:1 autoScaling:true",
 			},
-			wantMessages: []string{"release(cms/prod): released by @tester", "", "Set autoscaling.enabled to true", "Set autoscaling.maxReplicas to 4", "Set autoscaling.minReplicas to 1", "Set image.tag to imageTag", "Set replicacount to 3", ""},
+			wantMessages: []string{"release(cms/prod): released by @tester", "", "Set autoscaling.enabled to true", "Set autoscaling.maxReplicas to 4", "Set autoscaling.minReplicas to 1", "Set image.tag to imageTag", "Set replicacount to 2", ""},
 			wantErr:      false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotMessages, err := Run(tt.args.ctx, tt.args.clusterConfigs, tt.args.gitConfigs, tt.args.cmd, tt.args.txt, tt.args.caller)
+			gotMessages, err := Run(tt.args.ctx, tt.args.clusterConfigs, tt.args.cmd, tt.args.txt, tt.args.caller)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Run() error = %v, wantErr %v", err, tt.wantErr)
 				return

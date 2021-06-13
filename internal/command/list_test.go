@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/mirror-media/major-tom-go/config"
+	"github.com/mirror-media/major-tom-go/internal/test"
 )
 
 func TestList(t *testing.T) {
@@ -25,7 +26,7 @@ func TestList(t *testing.T) {
 			name: "ask for wrong project",
 			args: args{
 				ctx:            context.TODO(),
-				clusterConfigs: clusterConfigs,
+				clusterConfigs: test.ConfigTest.ClusterConfigs,
 				textParts:      []string{"mn"},
 			},
 			wantMessage: []string{"call help"},
@@ -35,7 +36,7 @@ func TestList(t *testing.T) {
 			name: "ask for projects",
 			args: args{
 				ctx:            context.TODO(),
-				clusterConfigs: clusterConfigs,
+				clusterConfigs: test.ConfigTest.ClusterConfigs,
 				textParts:      []string{},
 			},
 			wantMessage: []string{"The following projects are available: mm, readr, tv"},
@@ -44,7 +45,7 @@ func TestList(t *testing.T) {
 			name: "ask for stages",
 			args: args{
 				ctx:            context.TODO(),
-				clusterConfigs: clusterConfigs,
+				clusterConfigs: test.ConfigTest.ClusterConfigs,
 				textParts:      []string{"mm"},
 			},
 			wantMessage: []string{"The following stages are available for mm: dev, prod, staging"},

@@ -7,20 +7,11 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/mirror-media/major-tom-go/config"
+	"github.com/mirror-media/major-tom-go/internal/test"
 )
 
 func TestRepository_GetFile(t *testing.T) {
-	// FIXME we need proper test config
-	gitConfigs := map[config.Repository]config.GitConfig{
-		"tv": config.GitConfig{
-			Branch:        "test/majortom",
-			SSHKeyPath:    "/Users/chiu/dev/mtv/major-tom-go/configs/ssh/identity",
-			SSHKeyUser:    "mnews@mnews.tw",
-			SSHKnownhosts: "/Users/chiu/dev/mtv/major-tom-go/configs/ssh/known_hosts",
-			URL:           "ssh://source.developers.google.com:2022/p/mirror-tv-275709/r/helm",
-		},
-	}
-	repo, err := GetRepository("tv", gitConfigs)
+	repo, err := GetRepository("tv", test.GitConfigsTest)
 	if err != nil {
 		t.Error(err)
 	}

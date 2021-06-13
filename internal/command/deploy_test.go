@@ -7,6 +7,7 @@ import (
 
 	"github.com/mirror-media/major-tom-go/config"
 	mjcontext "github.com/mirror-media/major-tom-go/internal/context"
+	"github.com/mirror-media/major-tom-go/internal/test"
 )
 
 func Test_deploy(t *testing.T) {
@@ -15,6 +16,7 @@ func Test_deploy(t *testing.T) {
 	type args struct {
 		ctx            context.Context
 		clusterConfigs config.K8S
+		gitConfigs     map[config.Repository]config.GitConfig
 		textParts      []string
 		caller         string
 	}
@@ -28,7 +30,8 @@ func Test_deploy(t *testing.T) {
 			name: "no textParts",
 			args: args{
 				caller:         "@tester",
-				clusterConfigs: clusterConfigs,
+				clusterConfigs: test.ConfigTest.ClusterConfigs,
+				gitConfigs:     test.GitConfigsTest,
 				ctx:            ctx,
 			},
 			wantMessages: []string{"call help"},
@@ -38,7 +41,8 @@ func Test_deploy(t *testing.T) {
 			name: "dev",
 			args: args{
 				caller:         "@tester",
-				clusterConfigs: clusterConfigs,
+				clusterConfigs: test.ConfigTest.ClusterConfigs,
+				gitConfigs:     test.GitConfigsTest,
 				ctx:            ctx,
 				textParts:      []string{"tv", "prod", "yt-relay", "image:11", "pods:23"},
 			},
@@ -48,7 +52,7 @@ func Test_deploy(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			deploy(tt.args.ctx, tt.args.clusterConfigs, tt.args.textParts, tt.args.caller)
+			deploy(tt.args.ctx, tt.args.clusterConfigs, tt.args.gitConfigs, tt.args.textParts, tt.args.caller)
 			ch := tt.args.ctx.Value(mjcontext.ResponseChannel).(chan response)
 			gotResponse := <-ch
 			err := gotResponse.Error

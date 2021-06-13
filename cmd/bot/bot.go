@@ -66,7 +66,7 @@ func main() {
 	ctx := context.Background()
 
 	clusterConfigs := cfg.ClusterConfigs
-	command.DeployWorker.Init()
+	command.DeployWorker.Init(cfg.GitConfigs)
 	go func() {
 		for evt := range client.Events {
 			select {
@@ -149,7 +149,7 @@ func main() {
 
 					client.Ack(*evt.Request, payload)
 
-					messages, err := slashcommand.Run(ctx, clusterConfigs, cfg.GitConfigs, cmd.Command, cmd.Text, cmd.UserName)
+					messages, err := slashcommand.Run(ctx, clusterConfigs, cmd.Command, cmd.Text, cmd.UserName)
 					if messages == nil {
 						messages = []string{}
 					}

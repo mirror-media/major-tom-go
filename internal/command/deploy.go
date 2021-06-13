@@ -64,22 +64,24 @@ func Deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, 
 }
 
 type deployWorker struct {
-	once sync.Once
+	once       sync.Once
+	gitConfigs map[config.Repository]config.GitConfig
 }
 
 var DeployWorker deployWorker
 
-func (w *deployWorker) Init() {
+func (w *deployWorker) Init(gitConfigs map[config.Repository]config.GitConfig) {
+	w.gitConfigs = gitConfigs
 	go w.once.Do(func() {
 		for {
 			deployment := <-deployChannel
-			deploy(deployment.ctx, deployment.clusterConfigs, deployment.textParts, deployment.caller)
+			deploy(deployment.ctx, deployment.clusterConfigs, w.gitConfigs, deployment.textParts, deployment.caller)
 		}
 	})
 }
 
-// deploy deploy certain configuration to a service. textParts in interpreted as [project, stage, service, ...cfg:arg]
-func deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, caller string) {
+// deploy deploy certain configuration to a service. textParts in interpreted as [project, stage, service, ...cfg:value]
+func deploy(ctx context.Context, clusterConfigs config.K8S, gitConfigs map[config.Repository]config.GitConfig, textParts []string, caller string) {
 	var messages []string
 	var err error
 	ch := ctx.Value(mjcontext.ResponseChannel).(chan response)
@@ -91,7 +93,7 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, textParts []string, 
 	// textParts contains the config to deploy
 	default:
 		project := textParts[0]
-		repo, errRepo := gitop.GetRepository(textParts[0])
+		repo, errRepo := gitop.GetRepository(textParts[0], gitConfigs)
 		if errRepo != nil {
 			err = errors.Wrap(errRepo, fmt.Sprintf("getting repository for project(%s) has error", project))
 			break

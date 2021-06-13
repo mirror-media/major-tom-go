@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/mirror-media/major-tom-go/command"
 	"github.com/mirror-media/major-tom-go/config"
-	"github.com/mirror-media/major-tom-go/internal/command"
 	"github.com/mirror-media/major-tom-go/internal/test"
 )
 

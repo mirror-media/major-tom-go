@@ -10,9 +10,9 @@ import (
 	"strings"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/mirror-media/major-tom-go/command"
 	"github.com/mirror-media/major-tom-go/config"
-	"github.com/mirror-media/major-tom-go/internal/command"
-	"github.com/mirror-media/major-tom-go/internal/slashcommand"
+	"github.com/mirror-media/major-tom-go/slashcommand"
 	"github.com/sirupsen/logrus"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"

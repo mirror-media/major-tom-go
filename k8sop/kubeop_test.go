@@ -4,7 +4,11 @@ import (
 	"context"
 	"reflect"
 	"testing"
+
+	"github.com/mirror-media/major-tom-go/internal/test"
 )
+
+var tvKubeConfig = test.ConfigTest.ClusterConfigs["tv"]
 
 func TestGetResource(t *testing.T) {
 	type args struct {
@@ -22,9 +26,8 @@ func TestGetResource(t *testing.T) {
 		{
 			name: "get www pods",
 			args: args{
-				ctx: context.TODO(),
-				// FIXME we need proper path
-				kubeConfigPath: "/Users/chiu/dev/mtv/major-tom-go/configs/config",
+				ctx:            context.TODO(),
+				kubeConfigPath: string(tvKubeConfig["prod"]),
 				namespace:      "default",
 				name:           "www",
 			},
@@ -65,7 +68,7 @@ func Test_getDeploymentInfo(t *testing.T) {
 			name: "get www deployment info",
 			args: args{
 				ctx:            context.Background(),
-				kubeConfigPath: "/Users/chiu/dev/mtv/major-tom-go/configs/config",
+				kubeConfigPath: string(tvKubeConfig["prod"]),
 				namespace:      "default",
 				name:           "www",
 			},
@@ -108,7 +111,7 @@ func Test_listServices(t *testing.T) {
 			name: "list dev",
 			args: args{
 				ctx:            context.TODO(),
-				kubeConfigPath: "/Users/chiu/dev/mtv/major-tom-go/configs/config",
+				kubeConfigPath: string(tvKubeConfig["prod"]),
 			},
 			wantReleaseInfo: []ReleaseInfo{
 				{Status: "deployed", Name: "cms", Namespace: "default"},
@@ -139,6 +142,7 @@ func Test_listServices(t *testing.T) {
 }
 
 func TestGetDeploymentInfo(t *testing.T) {
+
 	type args struct {
 		ctx            context.Context
 		kubeConfigPath string
@@ -155,7 +159,7 @@ func TestGetDeploymentInfo(t *testing.T) {
 			name: "wip",
 			args: args{
 				ctx:            context.TODO(),
-				kubeConfigPath: "/Users/chiu/dev/mtv/major-tom-go/configs/config",
+				kubeConfigPath: string(tvKubeConfig["prod"]),
 				name:           "yt-relay",
 			},
 			want: DeploymentInfo{

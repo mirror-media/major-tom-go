@@ -11,8 +11,8 @@ import (
 
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/mirror-media/major-tom-go/config"
+	"github.com/mirror-media/major-tom-go/gitop"
 	mjcontext "github.com/mirror-media/major-tom-go/internal/context"
-	"github.com/mirror-media/major-tom-go/internal/gitop"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"

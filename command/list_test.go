@@ -39,16 +39,16 @@ func TestList(t *testing.T) {
 				clusterConfigs: test.ConfigTest.ClusterConfigs,
 				textParts:      []string{},
 			},
-			wantMessage: []string{"The following projects are available: mm, readr, tv"},
+			wantMessage: []string{"The following projects are available: tv"},
 		},
 		{
 			name: "ask for stages",
 			args: args{
 				ctx:            context.TODO(),
 				clusterConfigs: test.ConfigTest.ClusterConfigs,
-				textParts:      []string{"mm"},
+				textParts:      []string{"tv"},
 			},
-			wantMessage: []string{"The following stages are available for mm: dev, prod, staging"},
+			wantMessage: []string{"The following stages are available for tv: dev, prod, staging"},
 		},
 	}
 	for _, tt := range tests {

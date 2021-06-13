@@ -82,6 +82,7 @@ rules:
   - pods
   verbs:
   - get
+  - list
 - apiGroups:
   - "authorization.k8s.io"
   resources:

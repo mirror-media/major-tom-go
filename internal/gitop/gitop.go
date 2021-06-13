@@ -228,6 +228,12 @@ func getRepository(project config.Repository) (repo *Repository, err error) {
 			err = errors.Wrap(errSSH, "creating sshMethod from key failed")
 			return
 		}
+		knownHostsFn, errKH := ssh.NewKnownHostsCallback(repo.config.SSHKnownhosts)
+		if errKH != nil {
+			err = errors.Wrap(errKH, "getting known_hosts file failed")
+			return
+		}
+		sshMethod.HostKeyCallback = knownHostsFn
 		repo.authMethod = sshMethod
 		opt := git.CloneOptions{
 			Auth:          repo.authMethod,

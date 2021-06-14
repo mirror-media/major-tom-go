@@ -39,9 +39,30 @@ func Run(ctx context.Context, clusterConfigs config.K8S, slashcmd, txt, caller s
 	case "deploy":
 		messages, err = command.Deploy(ctx, clusterConfigs, txtParts[1:], "@"+caller)
 	default:
-		// TODO send help
-		messages = []string{"call help"}
-		err = errors.Errorf("command(%s) is not supported", cmd)
+		if isBowie(txtParts) {
+			messages = command.Bowie()
+		} else {
+			messages = []string{"call help"}
+			err = errors.Errorf("command(%s) is not supported", cmd)
+		}
 	}
 	return messages, err
+}
+
+func isBowie(txtParts []string) bool {
+
+	david := map[string]interface{}{
+		"tom":      nil,
+		"bowie":    nil,
+		"space":    nil,
+		"oddity":   nil,
+		"assemble": nil,
+	}
+
+	for _, text := range txtParts {
+		if _, ok := david[strings.ToLower(text)]; ok {
+			return true
+		}
+	}
+	return false
 }

@@ -54,7 +54,7 @@ func main() {
 		panic(fmt.Errorf("fatal error binding config file to struct: %s", err))
 	}
 
-	appToken := cfg.SlackToken
+	appToken := cfg.SlackAppToken
 
 	api := slack.New("",
 		slack.OptionDebug(true),

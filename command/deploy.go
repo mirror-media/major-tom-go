@@ -81,15 +81,20 @@ func (w *deployWorker) Init(gitConfigs map[config.Repository]config.GitConfig) {
 	})
 }
 
+type operation struct {
+	keyPath string
+	value   interface{}
+}
+
 // deploy deploy certain configuration to a service. textParts in interpreted as [project, stage, service, ...cfg:value]
 func deploy(ctx context.Context, clusterConfigs config.K8S, gitConfigs map[config.Repository]config.GitConfig, textParts []string, caller string) {
-	var messages []string
+	var messages = []string{}
 	var err error
 	ch := ctx.Value(mjcontext.ResponseChannel).(chan response)
 	switch len(textParts) {
 	// Deploy needs cfg:arg to operation on
 	case 0, 1, 2, 3:
-		messages = []string{"call help"}
+		messages = append([]string{"call help"}, messages...)
 		err = errors.New("Please provide more details...")
 	// textParts contains the config to deploy
 	default:
@@ -108,7 +113,7 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, gitConfigs map[confi
 		stage := textParts[1]
 		service := textParts[2]
 		args := textParts[3:]
-		operations := map[string]interface{}{}
+		operations := map[string]operation{}
 		// Validate the arguments
 		for _, arg := range args {
 			split := strings.Split(arg, ":")
@@ -125,11 +130,24 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, gitConfigs map[confi
 			var t string
 			switch t = config.valueType; t {
 			case "string":
-				operations[config.path] = value
+				operations[cfg] = operation{
+					keyPath: config.path,
+					value:   value,
+				}
 			case "int":
-				operations[config.path], err = strconv.ParseInt(value, 10, 0)
+				var v int64
+				v, err = strconv.ParseInt(value, 10, 0)
+				operations[cfg] = operation{
+					keyPath: config.path,
+					value:   v,
+				}
 			case "bool":
-				operations[config.path], err = strconv.ParseBool(value)
+				var v bool
+				v, err = strconv.ParseBool(value)
+				operations[cfg] = operation{
+					keyPath: config.path,
+					value:   v,
+				}
 			}
 			if err != nil {
 				err = errors.Wrap(err, fmt.Sprintf("value type of %s is %s, but %s is provided", cfg, config.valueType, value))
@@ -181,6 +199,10 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, gitConfigs map[confi
 			}
 			_ = hardResetFn()
 			return
+		}
+
+		for _, operation := range operations {
+			valueConfig.Set(operation.keyPath, operation.value, true)
 		}
 
 		err = f.Truncate(0)

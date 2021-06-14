@@ -15,8 +15,8 @@ type GitConfig struct {
 }
 
 type Config struct {
-	SlackBotToken  string                   `yaml:"slackBotToken"`
-	SlackToken     string                   `yaml:"slackToken"`
 	ClusterConfigs K8S                      `yaml:"clusterConfigs"`
 	GitConfigs     map[Repository]GitConfig `yaml:"gitConfigs"`
+	SlackAppToken  string                   `yaml:"slackAppToken"`
+	SlackBotToken  string                   `yaml:"slackBotToken"`
 }

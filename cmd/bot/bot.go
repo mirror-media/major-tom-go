@@ -9,15 +9,16 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/fsnotify/fsnotify"
+	gootkitconfig "github.com/gookit/config/v2"
+	"github.com/gookit/config/v2/yaml"
 	"github.com/mirror-media/major-tom-go/command"
 	"github.com/mirror-media/major-tom-go/config"
 	"github.com/mirror-media/major-tom-go/slashcommand"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 	"github.com/slack-go/slack/socketmode"
-	"github.com/spf13/viper"
 )
 
 func main() {
@@ -30,25 +31,27 @@ func main() {
 			},
 		})
 
-	viper.SetConfigName("config")    // name of config file (without extension)
-	viper.SetConfigType("yaml")      // REQUIRED if the config file does not have the extension in the name
-	viper.AddConfigPath("./configs") // path to look for the config file in
-	err := viper.ReadInConfig()      // Find and read the config file
-	if err != nil {                  // Handle errors reading the config file
-		panic(fmt.Errorf("Fatal error config file: %s \n", err))
-	}
-
-	viper.WatchConfig()
-	viper.OnConfigChange(func(e fsnotify.Event) {
-		// FIXME what should I do with changed file?
-		fmt.Println("Config file changed:", e.Name)
-	})
-
 	var cfg config.Config
 
-	err = viper.Unmarshal(&cfg)
+	// parse flag
+	botFlags := gootkitconfig.New("bot config")
+	err := botFlags.LoadFlags([]string{"c:string"})
 	if err != nil {
-		panic(fmt.Errorf("fatal error unmarshalling config file: %s \n", err))
+		panic(errors.Wrap(err, "loading flags for config file has error"))
+	}
+
+	botConfig := gootkitconfig.New("bot config")
+	botConfig.AddDriver(yaml.Driver)
+
+	// load config file
+	err = botConfig.LoadFiles(botFlags.String("c"))
+	if err != nil {
+		panic(errors.Wrap(err, "loading config file has error"))
+	}
+
+	err = botConfig.BindStruct("", &cfg)
+	if err != nil {
+		panic(fmt.Errorf("fatal error binding config file to struct: %s", err))
 	}
 
 	appToken := cfg.SlackToken

@@ -14,4 +14,4 @@ WORKDIR /major-tom
 
 COPY --from=build /major-tom/bin/ .
 
-ENTRYPOINT [ "sh", "-c", "./bot" ]
+ENTRYPOINT [ "/usr/bin/env", "./bot" ]

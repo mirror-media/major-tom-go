@@ -40,11 +40,14 @@ func main() {
 		panic(errors.Wrap(err, "loading flags for config file has error"))
 	}
 
+	c := botFlags.String("c")
+	logrus.Infof("config file is %s", c)
+
 	botConfig := gootkitconfig.New("bot config")
 	botConfig.AddDriver(yaml.Driver)
 
 	// load config file
-	err = botConfig.LoadFiles(botFlags.String("c"))
+	err = botConfig.LoadFiles(c)
 	if err != nil {
 		panic(errors.Wrap(err, "loading config file has error"))
 	}

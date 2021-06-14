@@ -3,6 +3,7 @@ package command
 import (
 	"context"
 	"fmt"
+	"io"
 	"sort"
 	"strconv"
 	"strings"
@@ -10,13 +11,13 @@ import (
 	"time"
 
 	"github.com/go-git/go-git/v5/plumbing"
+	gootkitconfig "github.com/gookit/config/v2"
+	"github.com/gookit/config/v2/yaml"
 	"github.com/mirror-media/major-tom-go/config"
 	"github.com/mirror-media/major-tom-go/gitop"
 	mjcontext "github.com/mirror-media/major-tom-go/internal/context"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
-	"gopkg.in/yaml.v2"
 )
 
 type yamlCFG struct {
@@ -157,11 +158,9 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, gitConfigs map[confi
 		}
 
 		// operation starts here. worktree needs to be cleaned if disaster happens
-		viper := viper.New()
-		viper.SetConfigType("yaml")
-		err = viper.ReadConfig(f)
+		b, err := io.ReadAll(f)
 		if err != nil {
-			err = errors.Wrap(err, fmt.Sprintf("parsing %s has error", valuesFilePath))
+			err = errors.Wrap(err, fmt.Sprintf("reading %s has error", valuesFilePath))
 			logrus.Warn(err)
 			ch <- response{
 				Messages: messages,
@@ -170,16 +169,15 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, gitConfigs map[confi
 			_ = hardResetFn()
 			return
 		}
-		for key, value := range operations {
-			viper.Set(key, value)
-		}
-		c := viper.AllSettings()
-
-		b, err := yaml.Marshal(c)
+		valueConfig := gootkitconfig.New(valuesFilePath)
+		valueConfig.AddDriver(yaml.Driver)
+		err = valueConfig.LoadStrings(gootkitconfig.Yaml, string(b))
 		if err != nil {
+			err = errors.Wrap(err, fmt.Sprintf("loading YAML from %s has error", valuesFilePath))
+			logrus.Warn(err)
 			ch <- response{
 				Messages: messages,
-				Error:    errors.Wrap(err, fmt.Sprintf("marshalling %s has error", valuesFilePath)),
+				Error:    err,
 			}
 			_ = hardResetFn()
 			return
@@ -195,15 +193,9 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, gitConfigs map[confi
 			_ = hardResetFn()
 			return
 		}
-		err = func() error {
-			f, err = repo.GetFile(valuesFilePath)
-			if err != nil {
-				return err
-			}
-			_, err = f.Write(b)
-			f.Close()
-			return err
-		}()
+
+		f, _ = repo.GetFile(valuesFilePath)
+		valueConfig.DumpTo(f, gootkitconfig.Yaml)
 		if err != nil {
 			ch <- response{
 				Messages: messages,

@@ -240,18 +240,22 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, gitConfigs map[confi
 			return
 		}
 
-		var body string
 		sortedOperations := make([]string, 0, len(operations))
-		for path := range operations {
-			sortedOperations = append(sortedOperations, path)
+		for cfg := range operations {
+			sortedOperations = append(sortedOperations, cfg)
 		}
 		sort.Strings(sortedOperations)
-		for _, path := range sortedOperations {
-			body += fmt.Sprintf("Set %s to %v\n", path, operations[path])
+		messages = append(messages, fmt.Sprintf("release(%s/%s): released by %s", service, stage, caller), "")
+		for _, cfg := range sortedOperations {
+			messages = append(messages, fmt.Sprintf("Set %s(%s) to %v", cfg, operations[cfg].keyPath, operations[cfg].value))
 		}
-		message := fmt.Sprintf("release(%s/%s): released by %s\n\n%s", service, stage, caller, body)
+		messages = append(messages, "")
 
-		err = repo.Commit(valuesFilePath, caller, message)
+		for _, m := range messages {
+			logrus.Println(m)
+		}
+
+		err = repo.Commit(valuesFilePath, caller, strings.Join(messages, "\n"))
 		if err != nil {
 			ch <- response{
 				Messages: append([]string{"this operation failed"}, messages...),
@@ -269,7 +273,6 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, gitConfigs map[confi
 			_ = hardResetFn()
 			return
 		}
-		messages = strings.Split(message, "\n")
 	}
 	ch <- response{
 		Messages: messages,

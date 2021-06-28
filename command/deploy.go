@@ -28,7 +28,7 @@ type yamlCFG struct {
 var valuesConfig = map[string]yamlCFG{
 	"image":       yamlCFG{path: "image.tag", valueType: "string"},
 	"autoScaling": yamlCFG{path: "autoscaling.enabled", valueType: "bool"},
-	"pods":        yamlCFG{path: "replicacount", valueType: "int"},
+	"pods":        yamlCFG{path: "replicaCount", valueType: "int"},
 	"maxPods":     yamlCFG{path: "autoscaling.maxReplicas", valueType: "int"},
 	"minPods":     yamlCFG{path: "autoscaling.minReplicas", valueType: "int"},
 }

@@ -79,3 +79,19 @@ If `major tom` doesn't find a `hpa.yaml` at the desired location, it will respon
 If we specify a replica number in the `Deployment` resource, then it will always try deploy the number each time. It may have unwanted side-effect, so leaving it to autoscaling would be a better idea.
 
 To change the current replica, one could use `scale` to change the scale in or scale out immediately.
+
+### List
+
+`list`:
+
+`list {project} {stage}` should provide a list of supported service name and repo name in the specified stage.
+
+Response should be a list of `{repo}/{service}` or `{repo}` like
+```
+1. `openwarehouse/openwarehouse-tv-cms`
+2. `openwarehouse/openwarehouse-tv-gql-external`
+3. `yt-relay/yt-relay-tv-yt-relay`
+4. `mirror-tv-nuxt`
+```
+
+`list {project} {stage} {service}` or `list {stage} {repo}` should provide the latest eleven changes in history.

@@ -95,3 +95,11 @@ Response should be a list of `{repo}/{service}` or `{repo}` like
 ```
 
 `list {project} {stage} {service}` or `list {stage} {repo}` should provide the latest eleven changes in history.
+
+### Info
+
+`info`:
+
+`info {project} {stage} {service}` or `list {project} {stage} {repo}` to report current status on kubernetes.
+
+Status includes `image tag`, `scaling configs`, and `current replica`.

@@ -63,11 +63,11 @@ I choose two separate commands to change image tag in different environments bec
 
 `scale {service} env={stage} conf1=value1 conf2=value2 ...` for the likes of `openwarehouse`
 
-For example: `scale openwarehouse-tv-gql-external  env=prod maxReplicas=1`
+For example: `scale openwarehouse-tv-gql-external env=prod maxReplicas=1`
 
 or 
 
-`scale mirror-tv-nuxt  env=staging maxReplicas=3 minReplicas=1`
+`scale mirror-tv-nuxt env=staging maxReplicas=3 minReplicas=1`
 
 Because we established a [naming and folder structure convention](https://github.com/mirror-media/kubernetes-configs/commit/f0fc6c2ca18e1c3a8fb6df50a4882121d5b67548) for `kubernetes-configs`, `major tom` doesn't need the repo name to find the desired `kustomize.yaml`. With a service name merely, `major tom` can identify the repo with confidence.
 
@@ -92,7 +92,7 @@ To change the current replica, one could use `scale` to change the scale in or s
 
 `list`:
 
-`list {project} {stage}` should provide a list of supported service name and repo name in the specified stage.
+`list project={project} env={stage}` should provide a list of supported service name and repo name in the specified stage.
 
 For example, `list project=tv env=staging`
 

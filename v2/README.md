@@ -42,13 +42,13 @@ According to the design of `kubernetes-configs`, the image tag will be defined i
 Thus two different api are designed for them. Reasons will be given after the following section.
 
 1. `release`: means release a image tag
-   1. `release {repo} project={project} image-tag={image tag}` for the likes of `openwarehouse`, eg., `release openwarehouse tv prod_81ab7ac`
-   2.  `release {repo} image-tag={image tag}` for the likes of `mirror-tv-nuxt`, eg., `release mirror-tv-nuxt prod_399440e`
+   1. `release {repo} project={project} image-tag={image tag}` for the likes of `openwarehouse`, eg., `release openwarehouse project=tv image-tag=prod_81ab7ac`
+   2.  `release {repo} image-tag={image tag}` for the likes of `mirror-tv-nuxt`, eg., `release mirror-tv-nuxt image-tag=prod_399440e`
 
 It will look for the `kustomize.yaml` in the project folder, if specified, of `prod` by default.
 
 2. `deploy`: can deploy a image to staing or dev environments for all projects
-   1. `deploy {repo} env={stage} image-tag={image tag}`, eg., `deploy openwarehouse dev dev_1bac23`
+   1. `deploy {repo} env={stage} image-tag={image tag}`, eg., `deploy openwarehouse env=dev mage-tag=dev_1bac23`
 
 I choose two separate commands to change image tag in different environments because
 
@@ -104,7 +104,7 @@ Response should be a list of `{repo}/{service}` or `{repo}` like
 4. `mirror-tv-nuxt`
 ```
 
-`list {service} project={project} env={stage} ` or `list {stage} {repo}` should provide the latest eleven changes in history.
+`list {service} env={stage}` or `list {repo} env={stage}` should provide the latest eleven changes in history.
 
 ### Info
 

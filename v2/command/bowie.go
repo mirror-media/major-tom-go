@@ -3,7 +3,7 @@ package command
 import (
 	"math/rand"
 
-	"helm.sh/helm/v3/pkg/time"
+	"time"
 )
 
 var lyrics = `Ground Control to Major Tom
@@ -51,7 +51,7 @@ var bowie = []string{lyrics, bowieArt}
 
 func Bowie() (messages []string) {
 
-	source := rand.NewSource(time.Now().Time.Unix())
+	source := rand.NewSource(time.Now().Unix())
 	r := rand.New(source)
 	index := r.Int() % len(bowie)
 

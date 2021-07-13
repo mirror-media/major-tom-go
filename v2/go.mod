@@ -9,10 +9,8 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/slack-go/slack v0.9.1
-	helm.sh/helm/v3 v3.6.0
 	k8s.io/apimachinery v0.21.1
 	k8s.io/client-go v0.21.1
-	rsc.io/letsencrypt v0.0.3 // indirect
 )
 
 replace k8s.io/api => k8s.io/api v0.21.1

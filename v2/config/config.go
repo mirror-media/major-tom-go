@@ -21,24 +21,21 @@ type GitConfig struct {
 }
 
 type Config struct {
-	ClusterConfigs K8S                      `yaml:"clusterConfigs"`
-	GitConfigs     map[Repository]GitConfig `yaml:"gitConfigs"`
-	SlackAppToken  string                   `yaml:"slackAppToken"`
-	SlackBotToken  string                   `yaml:"slackBotToken"`
+	SlackAppToken string `yaml:"slackAppToken"`
+	SlackBotToken string `yaml:"slackBotToken"`
 }
 
-type KubernetesConfigs struct {
-	Repo    string     `json:"repo"`
-	Branch  string     `json:"branch"`
+type KubernetesConfigsRepo struct {
+	GitConfig
 	Configs []Codebase `json:"configs"`
 }
 
 type Codebase struct {
-	Projects      []string `json:"projects"`
-	Repo          string   `json:"repo"`
-	Services      []string `json:"services"`
-	Stages        []string `json:"stages"`
-	StructureType int64    `json:"structureType"`
+	Projects []string `json:"projects"`
+	Repo     string   `json:"repo"`
+	Services []string `json:"services"`
+	Stages   []string `json:"stages"`
+	Type     int8     `json:"type"`
 }
 
 type Service struct {
@@ -47,8 +44,17 @@ type Service struct {
 	SimpleService string
 }
 
-func (c Codebase) GetServiceNames() (services []Service, err error) {
-	switch c.StructureType {
+func contains(s []string, target string) bool {
+	for _, stage := range s {
+		if stage == target {
+			return true
+		}
+	}
+	return false
+}
+
+func (c Codebase) GetServices() (services []Service, err error) {
+	switch c.Type {
 	case 1:
 		services = append(services, Service{
 			Name: c.Repo,
@@ -68,54 +74,64 @@ func (c Codebase) GetServiceNames() (services []Service, err error) {
 	return services, err
 }
 
-func (c Codebase) getSimplePathByStage(filename, stage string) (path string, err error) {
-	// TODO validate stage
-	return fmt.Sprintf("%s/overlays/%s/base/%s", c.Repo, stage, filename), err
-}
-func (c Codebase) getComplexPathByStageAndProject(filename, stage, project string) (path string, err error) {
-	// TODO validate stage and project
-	return fmt.Sprintf("%s/overlays/%s/overlays/%s/base/%s", c.Repo, stage, project, filename), err
+func (c Codebase) getType1RepoPath(filename, stage string) (path string, err error) {
+	if !contains(c.Stages, stage) {
+		err = errors.Wrap(err, fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
+	}
+	return fmt.Sprintf("%s/overlays/%s/%s", c.Repo, stage, filename), err
 }
 
-func (c Codebase) getComplexServicePathByStageAndProject(filename, stage, project, service string) (path string, err error) {
+func (c Codebase) getType2ProjectPath(filename, stage, project string) (path string, err error) {
+	if !contains(c.Stages, stage) {
+		err = errors.Wrap(err, fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
+	}
+	if !contains(c.Projects, project) {
+		err = errors.Wrap(err, fmt.Sprintf("project(%s) is not supported for %s", project, c.Repo))
+	}
+	return fmt.Sprintf("%s/overlays/%s/overlays/%s/base/%s", c.Repo, stage, project, filename), err
+}
+func (c Codebase) getType2StagePath(filename, stage string) (path string, err error) {
+	if !contains(c.Stages, stage) {
+		err = errors.Wrap(err, fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
+	}
+	return fmt.Sprintf("%s/overlays/%s/base/%s", c.Repo, stage, filename), err
+}
+
+func (c Codebase) getType2ServicePath(filename, stage, project, service string) (path string, err error) {
+	if !contains(c.Stages, stage) {
+		err = errors.Wrap(err, fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
+	}
+	if !contains(c.Projects, project) {
+		err = errors.Wrap(err, fmt.Sprintf("project(%s) is not supported for %s", project, c.Repo))
+	}
+	if !contains(c.Services, service) {
+		err = errors.Wrap(err, fmt.Sprintf("service(%s) is not supported for %s", service, c.Repo))
+	}
 	return fmt.Sprintf("%s/overlays/%s/overlays/%s/overlays/%s/%s", c.Repo, stage, project, service, filename), err
 }
 
-func (c Codebase) GetImageKustomizationPathByStage(stage string) (path string, err error) {
-	return c.getSimplePathByStage("kustomization.yaml", stage)
-}
-
-func (c Codebase) GetImageKustomizationForProdByProject(project string) (path string, err error) {
-	switch c.StructureType {
+func (c Codebase) GetImageKustomizationPath(stage, project string) (path string, err error) {
+	switch c.Type {
 	case 1:
-		path, err = c.GetImageKustomizationPathByStage("prod")
+		path, err = c.getType1RepoPath("kustomization.yaml", stage)
 	case 2:
-		path, err = c.getComplexPathByStageAndProject("kustomization.yaml", c.Repo, project)
+		if stage == "prod" {
+			path, err = c.getType2ProjectPath("kustomization.yaml", stage, project)
+		} else {
+			path, err = c.getType2StagePath("kustomization.yaml", stage)
+		}
 	default:
 		err = errors.New("StructureType is not supported. Check kubernetes-configs.yaml of major-tom-go")
 	}
 	return path, err
 }
 
-func (c Codebase) GetSimpleHpaPathByStage(stage string) (path string, err error) {
-	switch c.StructureType {
+func (c Codebase) GetHpaPath(stage, project, service string) (path string, err error) {
+	switch c.Type {
 	case 1:
-		path, err = c.getSimplePathByStage("hpa.yaml", "prod")
+		path, err = c.getType1RepoPath("hpa.yaml", stage)
 	case 2:
-		err = errors.New("StructureType is 2. Use GetHpaPathForProdByProjectAndService() instead")
-	default:
-		err = errors.New("StructureType is not supported. Check kubernetes-configs.yaml of major-tom-go")
-	}
-	return path, err
-}
-
-func (c Codebase) GetHpaPathForProdByProjectAndService(project, service string) (path string, err error) {
-	switch c.StructureType {
-	case 1:
-		err = errors.New("StructureType is 1. Use GetSimpleHpaPathByStage() instead")
-	case 2:
-		// TODO validate project
-		path, err = c.getComplexServicePathByStageAndProject("hpa.yaml", "prod", project, service)
+		path, err = c.getType2ServicePath("hpa.yaml", stage, project, service)
 	default:
 		err = errors.New("StructureType is not supported. Check kubernetes-configs.yaml of major-tom-go")
 	}

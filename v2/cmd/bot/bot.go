@@ -57,6 +57,30 @@ func main() {
 		panic(fmt.Errorf("fatal error binding config file to struct: %s", err))
 	}
 
+	var k8sRepoCFG config.KubernetesConfigsRepo
+	k8sFlags := gootkitconfig.New("k8s repo config")
+	err = k8sFlags.LoadFlags([]string{"k:string"})
+	if err != nil {
+		panic(errors.Wrap(err, "loading flags for k8s repo config file has error"))
+	}
+
+	k := k8sFlags.String("b")
+	logrus.Infof("k8s repo config file is %s", k)
+
+	k8sConfig := gootkitconfig.New("bot config")
+	k8sConfig.AddDriver(yaml.Driver)
+
+	// load config file
+	err = k8sConfig.LoadFiles(c)
+	if err != nil {
+		panic(errors.Wrap(err, "loading k8s repo config file has error"))
+	}
+
+	err = k8sConfig.BindStruct("", &k8sRepoCFG)
+	if err != nil {
+		panic(fmt.Errorf("fatal error binding config file to struct: %s", err))
+	}
+
 	appToken := cfg.SlackAppToken
 
 	api := slack.New("",
@@ -71,8 +95,9 @@ func main() {
 	// FIXME remove it and use client.Run(context.Context) instead
 	ctx := context.Background()
 
-	clusterConfigs := cfg.ClusterConfigs
-	command.DeployWorker.Init(cfg.GitConfigs)
+	// TODO
+	// clusterConfigs := cfg.ClusterConfigs
+	command.DeployWorker.Set(k8sRepoCFG.GitConfig)
 	go func() {
 		for evt := range client.Events {
 			select {
@@ -155,7 +180,7 @@ func main() {
 
 					client.Ack(*evt.Request, payload)
 
-					messages, err := slashcommand.Run(ctx, clusterConfigs, cmd.Command, cmd.Text, cmd.UserName)
+					messages, err := slashcommand.Run(ctx, k8sRepoCFG, cmd.Command, cmd.Text, cmd.UserName)
 					if messages == nil {
 						messages = []string{}
 					}

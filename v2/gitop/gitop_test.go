@@ -11,7 +11,7 @@ import (
 )
 
 func TestRepository_GetFile(t *testing.T) {
-	repo, err := GetRepository("tv", test.GitConfigsTest)
+	repo, err := GetK8SConfigsRepository(test.K8sRepo.GitConfig)
 	if err != nil {
 		t.Error(err)
 	}

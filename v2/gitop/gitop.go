@@ -25,33 +25,13 @@ type Repository struct {
 	locker     *sync.Mutex
 }
 
-var tv = &Repository{
+var k8s = &Repository{
 	config: nil,
-	name:   "mirror tv helm repo",
+	name:   "kubernetes-configs repo",
 	once:   &sync.Once{},
 	r:      nil,
 	locker: &sync.Mutex{},
 }
-
-// var mm, tv, readr = &Repository{
-// 	config: nil,
-// 	name:   "mirror weekly helm repo",
-// 	once:   &sync.Once{},
-// 	r:      nil,
-// 	locker: &sync.Mutex{},
-// }, &Repository{
-// 	config: nil,
-// 	name:   "mirror tv helm repo",
-// 	once:   &sync.Once{},
-// 	r:      nil,
-// 	locker: &sync.Mutex{},
-// }, &Repository{
-// 	config: nil,
-// 	name:   "readr helm repo",
-// 	once:   &sync.Once{},
-// 	r:      nil,
-// 	locker: &sync.Mutex{},
-// }
 
 // GetFile will return an billy.Filewith read and write permission
 func (repo *Repository) GetFile(filenamePath string) (billy.File, error) {
@@ -184,33 +164,12 @@ func (repo *Repository) Push() error {
 	})
 }
 
-// FIXME
-// GetRepository implicitly implies project equals repository. This is not a good practice, and it should be fixed in a good manner.
-func GetRepository(project string, gitConfigs map[config.Repository]config.GitConfig) (r *Repository, err error) {
-
-	gitConfig, isExisting := gitConfigs[config.Repository(project)]
-	if !isExisting {
-		return nil, errors.Errorf("the git config doesn't exist for the project(%s)", project)
-	}
-
-	// Get the singleton repository according to the project
-	return getRepository(config.Repository(project), gitConfig)
+func GetK8SConfigsRepository(gitConfig config.GitConfig) (repo *Repository, err error) {
+	return initRepo(k8s, gitConfig)
 }
 
-func getRepository(project config.Repository, gitConfig config.GitConfig) (repo *Repository, err error) {
-
-	switch project {
-	// case "mm":
-	// 	repo = mm
-	case "tv":
-		repo = tv
-	// case "readr":
-	// 	repo = readr
-	default:
-		return nil, errors.New("wrong project")
-	}
-
-	// Init git repo
+func initRepo(repo *Repository, gitConfig config.GitConfig) (*Repository, error) {
+	var err error
 	repo.once.Do(func() {
 		repo.locker.Lock()
 		defer repo.locker.Unlock()

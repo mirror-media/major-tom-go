@@ -132,7 +132,7 @@ func hardReset(repository *gitop.Repository, commit plumbing.Hash) (hardResetFN 
 
 // deploy certain configuration to a service. textParts in interpreted as [repo, env=value..., ...cfg=value]
 func deploy(ctx context.Context, k8sRepo *gitop.Repository, codebase config.Codebase, stage, project, imageTag, message, caller string) {
-	var messages = []string{}
+	var messages []string
 	var err error
 	ch := ctx.Value(mjcontext.ResponseChannel).(chan response)
 
@@ -152,7 +152,6 @@ func deploy(ctx context.Context, k8sRepo *gitop.Repository, codebase config.Code
 	hardResetFn := hardReset(repo, hash)
 
 	path, err := codebase.GetImageKustomizationPath(stage, project)
-	logrus.Debug(path)
 	if err != nil {
 		ch <- response{
 			Messages: messages,

@@ -39,7 +39,7 @@ func TestDeploy(t *testing.T) {
 		{
 			name: "no textParts",
 			args: args{
-				caller:  "@tester",
+				caller:  "+tester",
 				k8sRepo: test.K8sRepo,
 				ctx:     context.TODO(),
 			},
@@ -48,7 +48,8 @@ func TestDeploy(t *testing.T) {
 		{
 			name: "invalidRepo",
 			args: args{
-				caller:  "@tester",
+
+				caller:  "+tester",
 				k8sRepo: test.K8sRepo,
 				ctx:     context.TODO(),
 				texts:   []string{"invalidRepo", "env=dev", "image=" + newTag},
@@ -58,30 +59,29 @@ func TestDeploy(t *testing.T) {
 		{
 			name: "deploy env openwarehouse image-tag",
 			args: args{
-				caller:  "@tester",
+				caller:  "+tester",
 				k8sRepo: test.K8sRepo,
 				ctx:     context.TODO(),
 				texts:   []string{"openwarehouse", "env=dev", "image-tag=" + newTag},
 				message: "deploy openwarehouse env=dev image-tag=" + newTag,
-
 			},
-			wantMessages: []string{"deploy(openwarehouse/dev): deployed by @tester", "", "Set image-tag(images.0.newTag) to " + newTag, "by \"deploy openwarehouse env=dev image-tag=" + newTag + "\""},
+			wantMessages: []string{"deploy(openwarehouse/dev): deployed by +tester", "", "Set image-tag(images.0.newTag) to " + newTag, "by \"deploy openwarehouse env=dev image-tag=" + newTag + "\""},
 		},
 		{
 			name: "deploy env mirror-tv-nuxt image-tag",
 			args: args{
-				caller:  "@tester",
+				caller:  "+tester",
 				k8sRepo: test.K8sRepo,
 				ctx:     context.TODO(),
 				texts:   []string{"mirror-tv-nuxt", "env=dev", "image-tag=" + newTag},
 				message: "deploy mirror-tv-nuxt env=dev image-tag=" + newTag,
 			},
-			wantMessages: []string{"deploy(mirror-tv-nuxt/dev): deployed by @tester", "", "Set image-tag(images.0.newTag) to " + newTag, "by \"deploy mirror-tv-nuxt env=dev image-tag=" + newTag + "\""},
+			wantMessages: []string{"deploy(mirror-tv-nuxt/dev): deployed by +tester", "", "Set image-tag(images.0.newTag) to " + newTag, "by \"deploy mirror-tv-nuxt env=dev image-tag=" + newTag + "\""},
 		},
 		{
 			name: "can't deploy prod image-tag",
 			args: args{
-				caller:  "@tester",
+				caller:  "+tester",
 				k8sRepo: test.K8sRepo,
 				ctx:     context.TODO(),
 				texts:   []string{"openwarehouse", "env=prod", "image-tag=" + newTag},

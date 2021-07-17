@@ -76,36 +76,36 @@ func (c Codebase) GetServices() (services []Service, err error) {
 
 func (c Codebase) getType1RepoPath(filename, stage string) (path string, err error) {
 	if !contains(c.Stages, stage) {
-		err = errors.Wrap(err, fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
+		err = errors.New(fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
 	}
 	return fmt.Sprintf("%s/overlays/%s/%s", c.Repo, stage, filename), err
 }
 
 func (c Codebase) getType2ProjectPath(filename, stage, project string) (path string, err error) {
 	if !contains(c.Stages, stage) {
-		err = errors.Wrap(err, fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
+		err = errors.New(fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
 	}
 	if !contains(c.Projects, project) {
-		err = errors.Wrap(err, fmt.Sprintf("project(%s) is not supported for %s", project, c.Repo))
+		err = errors.New(fmt.Sprintf("project(%s) is not supported for %s", project, c.Repo))
 	}
 	return fmt.Sprintf("%s/overlays/%s/overlays/%s/base/%s", c.Repo, stage, project, filename), err
 }
 func (c Codebase) getType2StagePath(filename, stage string) (path string, err error) {
 	if !contains(c.Stages, stage) {
-		err = errors.Wrap(err, fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
+		err = errors.New(fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
 	}
 	return fmt.Sprintf("%s/overlays/%s/base/%s", c.Repo, stage, filename), err
 }
 
 func (c Codebase) getType2ServicePath(filename, stage, project, service string) (path string, err error) {
 	if !contains(c.Stages, stage) {
-		err = errors.Wrap(err, fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
+		err = errors.New(fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
 	}
 	if !contains(c.Projects, project) {
-		err = errors.Wrap(err, fmt.Sprintf("project(%s) is not supported for %s", project, c.Repo))
+		err = errors.New(fmt.Sprintf("project(%s) is not supported for %s", project, c.Repo))
 	}
 	if !contains(c.Services, service) {
-		err = errors.Wrap(err, fmt.Sprintf("service(%s) is not supported for %s", service, c.Repo))
+		err = errors.New(fmt.Sprintf("service(%s) is not supported for %s", service, c.Repo))
 	}
 	return fmt.Sprintf("%s/overlays/%s/overlays/%s/overlays/%s/%s", c.Repo, stage, project, service, filename), err
 }

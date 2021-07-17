@@ -182,7 +182,6 @@ func initRepo(repo *Repository, gitConfig config.GitConfig) (*Repository, error)
 	repo.config = &gitConfig
 	key, errRead := os.ReadFile(gitConfig.SSHKeyPath)
 	if errRead != nil {
-		err = errRead
 		err = errors.Wrap(errRead, "reading ssh key failed")
 		return repo, err
 	}

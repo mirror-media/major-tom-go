@@ -83,7 +83,7 @@ func main() {
 		socketmode.OptionDebug(true),
 		socketmode.OptionLog(log.New(os.Stdout, "socketmode: ", log.Lshortfile|log.LstdFlags)),
 	)
-	// FIXME remove it and use client.Run(context.Context) instead
+
 	ctx := context.Background()
 
 	// TODO
@@ -92,6 +92,7 @@ func main() {
 		for evt := range client.Events {
 			select {
 			case <-ctx.Done():
+				logrus.Info("Major Tom exiting now...")
 				os.Exit(0)
 			default:
 				switch evt.Type {
@@ -186,6 +187,6 @@ func main() {
 		}
 	}()
 
-	client.Run()
+	client.RunContext(ctx)
 
 }

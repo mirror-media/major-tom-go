@@ -164,9 +164,12 @@ func (repo *Repository) Push() error {
 	})
 }
 
-func GetK8SConfigsRepository(gitConfig config.GitConfig) (repo *Repository, err error) {
-	repo.once.Do(func() {
+func GetK8SConfigsRepository(gitConfig config.GitConfig) (k8srepo *Repository, err error) {
+	k8s.once.Do(func() {
 		_, err = initRepo(k8s, gitConfig)
+		if err == nil {
+			err = k8s.Pull()
+		}
 	})
 	return k8s, err
 }
@@ -210,8 +213,5 @@ func initRepo(repo *Repository, gitConfig config.GitConfig) (*Repository, error)
 		repo.r = newGitRepo
 	}
 
-	if err == nil {
-		err = repo.Pull()
-	}
 	return repo, err
 }

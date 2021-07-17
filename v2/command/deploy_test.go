@@ -99,12 +99,6 @@ func TestDeploy(t *testing.T) {
 				return
 			}
 			if !reflect.DeepEqual(gotMessages, tt.wantMessages) {
-				for _, item := range gotMessages {
-					fmt.Println("'" + item + "'")
-				}
-				for _, item := range tt.wantMessages {
-					fmt.Println("'" + item + "'")
-				}
 				t.Errorf("Deploy() = %+v, want %+v", gotMessages, tt.wantMessages)
 			}
 		})

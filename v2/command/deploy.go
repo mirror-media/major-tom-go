@@ -116,13 +116,15 @@ func (w *deployWorker) Set(gitConfigs config.GitConfig) {
 		logrus.Fatal(err)
 	}
 
-	go w.once.Do(func() {
+	w.once.Do(func() {
 		w.isRunning = true
 		logrus.Info("the deploy worker is running now....")
-		for {
-			deployment := <-deployChannel
-			deploy(deployment.ctx, w.k8sRepo, *deployment.codebase, deployment.stage, deployment.project, deployment.imageTag, deployment.message, deployment.caller)
-		}
+		go func() {
+			for {
+				deployment := <-deployChannel
+				deploy(deployment.ctx, w.k8sRepo, *deployment.codebase, deployment.stage, deployment.project, deployment.imageTag, deployment.message, deployment.caller)
+			}
+		}()
 	})
 }
 

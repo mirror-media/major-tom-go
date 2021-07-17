@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	gootkitconfig "github.com/gookit/config/v2"
+	gookitconfig "github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/yaml"
 	"github.com/mirror-media/major-tom-go/v2/config"
 	"github.com/mirror-media/major-tom-go/v2/slashcommand"
@@ -30,8 +30,8 @@ func main() {
 	var cfg config.Config
 
 	// parse flag
-	botFlags := gootkitconfig.New("bot config")
-	err := botFlags.LoadFlags([]string{"c:string"})
+	botFlags := gookitconfig.New("bot config")
+	err := botFlags.LoadFlags([]string{"c:string", "k:string"})
 	if err != nil {
 		panic(errors.Wrap(err, "loading flags for config file has error"))
 	}
@@ -39,7 +39,7 @@ func main() {
 	c := botFlags.String("c")
 	logrus.Infof("config file is %s", c)
 
-	botConfig := gootkitconfig.New("bot config")
+	botConfig := gookitconfig.New("bot config")
 	botConfig.AddDriver(yaml.Driver)
 
 	// load config file
@@ -58,7 +58,7 @@ func main() {
 	k := botFlags.String("k")
 	logrus.Infof("k8s repo config file is %s", k)
 
-	k8sConfig := gootkitconfig.New("bot config")
+	k8sConfig := gookitconfig.New("bot config")
 	k8sConfig.AddDriver(yaml.Driver)
 
 	// load config file

@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path"
-	"runtime"
 	"strings"
+	"time"
 
 	gootkitconfig "github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/yaml"
@@ -18,16 +17,14 @@ import (
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 	"github.com/slack-go/slack/socketmode"
+	formatter "github.com/yanana/logrus-formatter-gke"
 )
 
 func main() {
 	logrus.SetReportCaller(true)
 	logrus.SetFormatter(
-		&logrus.TextFormatter{
-			CallerPrettyfier: func(f *runtime.Frame) (string, string) {
-				filename := path.Base(f.File)
-				return fmt.Sprintf("%s()", f.Function), fmt.Sprintf("%s:%d", filename, f.Line)
-			},
+		&formatter.GKELogFormatter{
+			TimestampFormat: time.RFC3339,
 		})
 
 	var cfg config.Config

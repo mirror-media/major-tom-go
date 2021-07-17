@@ -9,6 +9,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/slack-go/slack v0.9.2
+	github.com/yanana/logrus-formatter-gke v0.0.1 // indirect
 	k8s.io/apimachinery v0.21.2
 	k8s.io/client-go v0.21.2
 )

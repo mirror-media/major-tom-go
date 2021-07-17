@@ -38,6 +38,8 @@ func Run(ctx context.Context /*clusterConfigs config.K8S,*/, k8sRepoConfig confi
 	// 	messages, err = command.Info(ctx, clusterConfigs, txtParts[1:])
 	case "deploy":
 		messages, err = command.Deploy(ctx, k8sRepoConfig, txtParts[1:], txt, "+"+caller)
+	case "release":
+		messages, err = command.Release(ctx, k8sRepoConfig, txtParts[1:], txt, "+"+caller)
 	default:
 		if isBowie(txtParts) {
 			messages = command.Bowie()

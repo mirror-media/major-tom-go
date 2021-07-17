@@ -122,7 +122,7 @@ func TestRelease(t *testing.T) {
 			wantErr: true,
 		},
 	}
-	DeployWorker.Set(test.K8sRepo.GitConfig)
+	DeployWorker.Set(test.K8sRepo.Git)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotMessages, err := Release(tt.args.ctx, tt.args.k8sRepo, tt.args.texts, tt.args.message, tt.args.caller)

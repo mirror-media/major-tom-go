@@ -26,16 +26,16 @@ type Config struct {
 }
 
 type KubernetesConfigsRepo struct {
-	GitConfig
-	Configs []Codebase `json:"configs"`
+	Git     GitConfig  `yaml:"git"`
+	Configs []Codebase `yaml:"configs"`
 }
 
 type Codebase struct {
-	Projects []string `json:"projects"`
-	Repo     string   `json:"repo"`
-	Services []string `json:"services"`
-	Stages   []string `json:"stages"`
-	Type     int8     `json:"type"`
+	Projects []string `yaml:"projects"`
+	Repo     string   `yaml:"repo"`
+	Services []string `yaml:"services"`
+	Stages   []string `yaml:"stages"`
+	Type     int8     `yaml:"type"`
 }
 
 type Service struct {

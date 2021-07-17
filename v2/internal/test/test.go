@@ -3,7 +3,7 @@ package test
 import "github.com/mirror-media/major-tom-go/v2/config"
 
 var K8sRepo = config.KubernetesConfigsRepo{
-	GitConfig: config.GitConfig{
+	Git: config.GitConfig{
 		URL:           "git@github.com:mirror-media/kubernetes-configs.git",
 		Branch:        "major-tom-test",
 		SSHKeyPath:    "../configs/ssh/identity",

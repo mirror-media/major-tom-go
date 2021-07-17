@@ -165,49 +165,51 @@ func (repo *Repository) Push() error {
 }
 
 func GetK8SConfigsRepository(gitConfig config.GitConfig) (repo *Repository, err error) {
-	return initRepo(k8s, gitConfig)
+	repo.once.Do(func() {
+		_, err = initRepo(k8s, gitConfig)
+	})
+	return k8s, err
 }
 
 func initRepo(repo *Repository, gitConfig config.GitConfig) (*Repository, error) {
 	var err error
-	repo.once.Do(func() {
-		repo.locker.Lock()
-		defer repo.locker.Unlock()
-		// Get the config according to the project
-		repo.config = &gitConfig
-		key, errRead := os.ReadFile(gitConfig.SSHKeyPath)
-		if errRead != nil {
-			err = errRead
-			err = errors.Wrap(errRead, "reading ssh key failed")
-			return
-		}
-		sshMethod, errSSH := ssh.NewPublicKeys(gitConfig.SSHKeyUser, key, "")
-		if errSSH != nil {
-			err = errors.Wrap(errSSH, "creating sshMethod from key failed")
-			return
-		}
-		knownHostsFn, errKH := ssh.NewKnownHostsCallback(repo.config.SSHKnownhosts)
-		if errKH != nil {
-			err = errors.Wrap(errKH, "getting known_hosts file failed")
-			return
-		}
-		sshMethod.HostKeyCallback = knownHostsFn
-		repo.authMethod = sshMethod
-		opt := git.CloneOptions{
-			Auth:          repo.authMethod,
-			ReferenceName: plumbing.NewBranchReferenceName(gitConfig.Branch),
-			SingleBranch:  true,
-			URL:           gitConfig.URL,
-		}
-		newGitRepo, errGitRepo := cloneGitRepo(opt)
-		if errGitRepo != nil {
-			// Reset Once
-			repo.once = &sync.Once{}
-			err = errors.Wrap(errGitRepo, "cloning git repo failed")
-		} else {
-			repo.r = newGitRepo
-		}
-	})
+	repo.locker.Lock()
+	defer repo.locker.Unlock()
+	// Get the config according to the project
+	repo.config = &gitConfig
+	key, errRead := os.ReadFile(gitConfig.SSHKeyPath)
+	if errRead != nil {
+		err = errRead
+		err = errors.Wrap(errRead, "reading ssh key failed")
+		return repo, err
+	}
+	sshMethod, errSSH := ssh.NewPublicKeys(gitConfig.SSHKeyUser, key, "")
+	if errSSH != nil {
+		err = errors.Wrap(errSSH, "creating sshMethod from key failed")
+		return repo, err
+	}
+	knownHostsFn, errKH := ssh.NewKnownHostsCallback(repo.config.SSHKnownhosts)
+	if errKH != nil {
+		err = errors.Wrap(errKH, "getting known_hosts file failed")
+		return repo, err
+	}
+	sshMethod.HostKeyCallback = knownHostsFn
+	repo.authMethod = sshMethod
+	opt := git.CloneOptions{
+		Auth:          repo.authMethod,
+		ReferenceName: plumbing.NewBranchReferenceName(gitConfig.Branch),
+		SingleBranch:  true,
+		URL:           gitConfig.URL,
+	}
+	newGitRepo, errGitRepo := cloneGitRepo(opt)
+	if errGitRepo != nil {
+		// Reset Once
+		repo.once = &sync.Once{}
+		err = errors.Wrap(errGitRepo, "cloning git repo failed")
+	} else {
+		repo.r = newGitRepo
+	}
+
 	if err == nil {
 		err = repo.Pull()
 	}

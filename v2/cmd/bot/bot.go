@@ -11,7 +11,6 @@ import (
 
 	gootkitconfig "github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/yaml"
-	"github.com/mirror-media/major-tom-go/v2/command"
 	"github.com/mirror-media/major-tom-go/v2/config"
 	"github.com/mirror-media/major-tom-go/v2/slashcommand"
 	"github.com/pkg/errors"
@@ -97,7 +96,6 @@ func main() {
 
 	// TODO
 	// clusterConfigs := cfg.ClusterConfigs
-	command.DeployWorker.Set(k8sRepoCFG.GitConfig)
 	go func() {
 		for evt := range client.Events {
 			select {

@@ -21,6 +21,7 @@ type CMD struct {
 
 // Run perform operation per cmd and txt. ctx is expected to have a response channel
 func Run(ctx context.Context /*clusterConfigs config.K8S,*/, k8sRepoConfig config.KubernetesConfigsRepo, slashcmd, txt, caller string) (messages []string, err error) {
+	command.DeployWorker.Set(k8sRepoConfig.GitConfig)
 	if slashcmd != ACCEPTED_SLASHCMD {
 		return []string{"call help"}, errors.Errorf("%s is not a supported slash command", slashcmd)
 	}

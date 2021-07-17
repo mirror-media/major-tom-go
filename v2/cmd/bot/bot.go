@@ -33,7 +33,7 @@ func main() {
 	botFlags := gookitconfig.New("bot config")
 	err := botFlags.LoadFlags([]string{"c:string", "k:string"})
 	if err != nil {
-		panic(errors.Wrap(err, "loading flags for config file has error"))
+		logrus.Panic(errors.Wrap(err, "loading flags for config file has error"))
 	}
 
 	c := botFlags.String("c")
@@ -45,12 +45,12 @@ func main() {
 	// load config file
 	err = botConfig.LoadFiles(c)
 	if err != nil {
-		panic(errors.Wrap(err, "loading config file has error"))
+		logrus.Panic(errors.Wrap(err, "loading config file has error"))
 	}
 
 	err = botConfig.BindStruct("", &cfg)
 	if err != nil {
-		panic(fmt.Errorf("fatal error binding config file to struct: %s", err))
+		logrus.Panic(fmt.Errorf("fatal error binding config file to struct: %s", err))
 	}
 
 	var k8sRepoCFG config.KubernetesConfigsRepo
@@ -64,12 +64,12 @@ func main() {
 	// load config file
 	err = k8sConfig.LoadFiles(k)
 	if err != nil {
-		panic(errors.Wrap(err, "loading k8s repo config file has error"))
+		logrus.Panic(errors.Wrap(err, "loading k8s repo config file has error"))
 	}
 
 	err = k8sConfig.BindStruct("", &k8sRepoCFG)
 	if err != nil {
-		panic(fmt.Errorf("fatal error binding config file to struct: %s", err))
+		logrus.Panic(fmt.Errorf("fatal error binding config file to struct: %s", err))
 	}
 
 	appToken := cfg.SlackAppToken
@@ -96,20 +96,19 @@ func main() {
 			default:
 				switch evt.Type {
 				case socketmode.EventTypeConnecting:
-					fmt.Println("Connecting to Slack with Socket Mode...")
+					logrus.Info("Connecting to Slack with Socket Mode...")
 				case socketmode.EventTypeConnectionError:
-					fmt.Println("Connection failed. Retrying later...")
+					logrus.Info("Connection failed. Retrying later...")
 				case socketmode.EventTypeConnected:
-					fmt.Println("Connected to Slack with Socket Mode.")
+					logrus.Info("Connected to Slack with Socket Mode.")
 				case socketmode.EventTypeEventsAPI:
 					eventsAPIEvent, ok := evt.Data.(slackevents.EventsAPIEvent)
 					if !ok {
-						fmt.Printf("Ignored %+v\n", evt)
-
+						logrus.Infof("Ignored %+v\n", evt)
 						continue
 					}
 
-					fmt.Printf("Event received: %+v\n", eventsAPIEvent)
+					logrus.Info("Event received: %+v\n", eventsAPIEvent)
 
 					client.Ack(*evt.Request)
 
@@ -120,10 +119,10 @@ func main() {
 						case *slackevents.AppMentionEvent:
 							_, _, err := api.PostMessage(ev.Channel, slack.MsgOptionText("Yes, hello.", false))
 							if err != nil {
-								fmt.Printf("failed posting message: %v", err)
+								logrus.Errorf("failed posting message: %v", err)
 							}
 						case *slackevents.MemberJoinedChannelEvent:
-							fmt.Printf("user %q joined to channel %q", ev.User, ev.Channel)
+							logrus.Infof("user %q joined to channel %q", ev.User, ev.Channel)
 						}
 					default:
 						client.Debugf("unsupported Events API event received")
@@ -131,12 +130,11 @@ func main() {
 				case socketmode.EventTypeInteractive:
 					callback, ok := evt.Data.(slack.InteractionCallback)
 					if !ok {
-						fmt.Printf("Ignored %+v\n", evt)
-
+						logrus.Infof("Ignored %+v\n", evt)
 						continue
 					}
 
-					fmt.Printf("Interaction received: %+v\n", callback)
+					logrus.Infof("Interaction received: %+v\n", callback)
 
 					var payload interface{}
 
@@ -157,8 +155,7 @@ func main() {
 				case socketmode.EventTypeSlashCommand:
 					cmd, ok := evt.Data.(slack.SlashCommand)
 					if !ok {
-						fmt.Printf("Ignored %+v\n", evt)
-
+						logrus.Infof("Ignored %+v\n", evt)
 						continue
 					}
 
@@ -183,7 +180,7 @@ func main() {
 					api.PostMessage(cmd.ChannelID, slack.MsgOptionResponseURL(cmd.ResponseURL, "in_channel"), slack.MsgOptionText(message, false))
 
 				default:
-					fmt.Fprintf(os.Stderr, "Unexpected event type received: %s\n", evt.Type)
+					logrus.Errorf("Unexpected event type received: %s\n", evt.Type)
 				}
 			}
 		}

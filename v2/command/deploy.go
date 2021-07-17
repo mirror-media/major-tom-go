@@ -76,7 +76,7 @@ func Deploy(ctx context.Context, k8sRepo config.KubernetesConfigsRepo, texts []s
 	}
 
 	if len(texts) != 0 {
-		return nil, errors.New(strings.Join(texts, ", ") + " are not supported")
+		return nil, errors.New("Major Tom does not support: " + strings.Join(texts, ", "))
 	}
 
 	timeout := 5 * time.Minute

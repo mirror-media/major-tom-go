@@ -31,23 +31,24 @@ type Deployment struct {
 	stage    string
 	imageTag string
 	caller   string
+	message  string
 }
 
 var deployChannel = make(chan Deployment, 64)
 
 // Deploy certain configuration to a service. textParts in interpreted as [project, stage, service, ...cfg:arg]
-func Deploy(ctx context.Context, k8sRepo config.KubernetesConfigsRepo, textParts []string, caller string) (messages []string, err error) {
+func Deploy(ctx context.Context, k8sRepo config.KubernetesConfigsRepo, texts []string, message, caller string) (messages []string, err error) {
 	if !DeployWorker.isRunning {
 		return nil, errors.New("deploy worker is not running")
 	}
 
-	if len(textParts) < 1 {
+	if len(texts) < 1 {
 		return nil, errors.New("call help")
 	}
 
 	// Compare and retrieve the repo before we engage the deployment, so we can pass the repo to deploy worker for clearer intention
 	codebases := k8sRepo.Configs
-	repoNameInCMD, textParts := pop(textParts, 0)
+	repoNameInCMD, texts := pop(texts, 0)
 	var codebase *config.Codebase
 	for _, c := range codebases {
 		if repoNameInCMD == c.Repo {
@@ -62,20 +63,20 @@ func Deploy(ctx context.Context, k8sRepo config.KubernetesConfigsRepo, textParts
 
 	// deploy requires env only and it only supports image-tag only
 
-	textParts, stage, err := popValue(textParts, "env", "=")
+	texts, stage, err := popValue(texts, "env", "=")
 	if err != nil {
 		return nil, errors.Wrap(err, "getting env for deployment encountered an error")
 	} else if stage == "prod" {
 		return nil, errors.New("deploy command doesn't support prod env")
 	}
 
-	textParts, image, err := popValue(textParts, "image-tag", "=")
+	texts, image, err := popValue(texts, "image-tag", "=")
 	if err != nil {
 		return nil, errors.Wrap(err, "getting image-tag for deployment encountered an error")
 	}
 
-	if len(textParts) != 0 {
-		return nil, errors.New(strings.Join(textParts, ", ") + " are not supported")
+	if len(texts) != 0 {
+		return nil, errors.New(strings.Join(texts, ", ") + " are not supported")
 	}
 
 	timeout := 5 * time.Minute
@@ -89,13 +90,14 @@ func Deploy(ctx context.Context, k8sRepo config.KubernetesConfigsRepo, textParts
 		stage:    stage,
 		imageTag: image,
 		caller:   caller,
+		message:  message,
 	}
 
 	select {
 	case commandResponse := <-ch:
 		return commandResponse.Messages, commandResponse.Error
 	case <-newCtx.Done():
-		return nil, errors.Errorf("\"%s\" command has timeouted(%f)", strings.Join(textParts, " "), timeout.Minutes())
+		return nil, errors.Errorf("\"%s\" command has timeouted(%f)", strings.Join(texts, " "), timeout.Minutes())
 	}
 }
 
@@ -119,7 +121,7 @@ func (w *deployWorker) Set(gitConfigs config.GitConfig) {
 		logrus.Info("the deploy worker is running now....")
 		for {
 			deployment := <-deployChannel
-			deploy(deployment.ctx, w.k8sRepo, *deployment.codebase, deployment.stage, deployment.project, deployment.imageTag, deployment.caller)
+			deploy(deployment.ctx, w.k8sRepo, *deployment.codebase, deployment.stage, deployment.project, deployment.imageTag, deployment.message, deployment.caller)
 		}
 	})
 }
@@ -129,7 +131,7 @@ func hardReset(repository *gitop.Repository, commit plumbing.Hash) (hardResetFN 
 }
 
 // deploy certain configuration to a service. textParts in interpreted as [repo, env=value..., ...cfg=value]
-func deploy(ctx context.Context, k8sRepo *gitop.Repository, codebase config.Codebase, stage, project, imageTag, caller string) {
+func deploy(ctx context.Context, k8sRepo *gitop.Repository, codebase config.Codebase, stage, project, imageTag, message, caller string) {
 	var messages = []string{}
 	var err error
 	ch := ctx.Value(mjcontext.ResponseChannel).(chan response)
@@ -214,7 +216,7 @@ func deploy(ctx context.Context, k8sRepo *gitop.Repository, codebase config.Code
 		pendingProject = "/" + project
 	}
 
-	messages = append(messages, fmt.Sprintf("deploy(%s/%s%s): deployed by %s", codebase.Repo, stage, pendingProject, caller), "", fmt.Sprintf("Set %s(%s) to %v", "image-tag", "images.0.newTag", imageTag))
+	messages = append(messages, fmt.Sprintf("deploy(%s/%s%s): deployed by %s", codebase.Repo, stage, pendingProject, caller), "", fmt.Sprintf("Set %s(%s) to %v", "image-tag", "images.0.newTag", imageTag), fmt.Sprintf("by \"%s\"", message))
 
 	err = f.Truncate(0)
 	f.Close()

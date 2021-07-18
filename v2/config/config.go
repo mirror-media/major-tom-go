@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/pkg/errors"
 )
@@ -40,6 +41,7 @@ type Codebase struct {
 
 type Service struct {
 	Name          string
+	Project       string
 	Repo          string
 	SimpleService string
 }
@@ -61,59 +63,85 @@ func (c Codebase) GetServices() (services []Service, err error) {
 			Repo: c.Repo,
 		})
 	case 2:
-		for _, service := range c.Services {
-			services = append(services, Service{
-				Name:          fmt.Sprintf("%s-%s-%s", c.Repo, c.Projects, service),
-				Repo:          c.Repo,
-				SimpleService: service,
-			})
+		for _, project := range c.Projects {
+			for _, service := range c.Services {
+				services = append(services, Service{
+					Name:          fmt.Sprintf("%s-%s-%s", c.Repo, project, service),
+					Repo:          c.Repo,
+					SimpleService: service,
+				})
+			}
 		}
+		sort.Slice(services, func(i, j int) bool {
+			return services[i].Name < services[j].Name
+		})
 	default:
-		err = errors.New("StructureType is not supported. Check kubernetes-configs.yaml of major-tom-go")
+		err = errors.New("Type is not supported. Check kubernetes-configs.yaml of major-tom-go")
 	}
 	return services, err
 }
 
-func (c Codebase) getType1RepoPath(filename, stage string) (path string, err error) {
-	if !contains(c.Stages, stage) {
-		err = errors.New(fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
+func (c Codebase) getType1StagePath(filename, stage string) (path string, err error) {
+	path = fmt.Sprintf("%s/overlays/%s/%s", c.Repo, stage, filename)
+	if c.Type != 1 {
+		return path, errors.New(fmt.Sprintf("codebase has type(%d) so the path is wrong", c.Type))
 	}
-	return fmt.Sprintf("%s/overlays/%s/%s", c.Repo, stage, filename), err
+	if !contains(c.Stages, stage) {
+		return path, errors.New(fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
+	}
+	return path, err
 }
 
 func (c Codebase) getType2ProjectPath(filename, stage, project string) (path string, err error) {
+	path = fmt.Sprintf("%s/overlays/%s/overlays/%s/base/%s", c.Repo, stage, project, filename)
+
+	if c.Type != 2 {
+		return path, errors.New(fmt.Sprintf("codebase has type(%d) so the path is wrong", c.Type))
+	}
+
 	if !contains(c.Stages, stage) {
-		err = errors.New(fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
+		return path, errors.New(fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
 	}
 	if !contains(c.Projects, project) {
-		err = errors.New(fmt.Sprintf("project(%s) is not supported for %s", project, c.Repo))
+		return path, errors.New(fmt.Sprintf("project(%s) is not supported for %s", project, c.Repo))
 	}
-	return fmt.Sprintf("%s/overlays/%s/overlays/%s/base/%s", c.Repo, stage, project, filename), err
+	return path, err
 }
+
 func (c Codebase) getType2StagePath(filename, stage string) (path string, err error) {
-	if !contains(c.Stages, stage) {
-		err = errors.New(fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
+	path = fmt.Sprintf("%s/overlays/%s/base/%s", c.Repo, stage, filename)
+
+	if c.Type != 2 {
+		return path, errors.New(fmt.Sprintf("codebase has type(%d) so the path is wrong", c.Type))
 	}
-	return fmt.Sprintf("%s/overlays/%s/base/%s", c.Repo, stage, filename), err
+	if !contains(c.Stages, stage) {
+		return path, errors.New(fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
+	}
+	return path, err
 }
 
 func (c Codebase) getType2ServicePath(filename, stage, project, service string) (path string, err error) {
+	path = fmt.Sprintf("%s/overlays/%s/overlays/%s/overlays/%s/%s", c.Repo, stage, project, service, filename)
+
+	if c.Type != 2 {
+		return path, errors.New(fmt.Sprintf("codebase has type(%d) so the path is wrong", c.Type))
+	}
 	if !contains(c.Stages, stage) {
-		err = errors.New(fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
+		return path, errors.New(fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
 	}
 	if !contains(c.Projects, project) {
-		err = errors.New(fmt.Sprintf("project(%s) is not supported for %s", project, c.Repo))
+		return path, errors.New(fmt.Sprintf("project(%s) is not supported for %s", project, c.Repo))
 	}
 	if !contains(c.Services, service) {
-		err = errors.New(fmt.Sprintf("service(%s) is not supported for %s", service, c.Repo))
+		return path, errors.New(fmt.Sprintf("service(%s) is not supported for %s", service, c.Repo))
 	}
-	return fmt.Sprintf("%s/overlays/%s/overlays/%s/overlays/%s/%s", c.Repo, stage, project, service, filename), err
+	return path, err
 }
 
 func (c Codebase) GetImageKustomizationPath(stage, project string) (path string, err error) {
 	switch c.Type {
 	case 1:
-		path, err = c.getType1RepoPath("kustomization.yaml", stage)
+		path, err = c.getType1StagePath("kustomization.yaml", stage)
 	case 2:
 		if stage == "prod" {
 			path, err = c.getType2ProjectPath("kustomization.yaml", stage, project)
@@ -121,7 +149,7 @@ func (c Codebase) GetImageKustomizationPath(stage, project string) (path string,
 			path, err = c.getType2StagePath("kustomization.yaml", stage)
 		}
 	default:
-		err = errors.New("StructureType is not supported. Check kubernetes-configs.yaml of major-tom-go")
+		err = errors.New("Type is not supported. Check kubernetes-configs.yaml of major-tom-go")
 	}
 	return path, err
 }
@@ -129,11 +157,11 @@ func (c Codebase) GetImageKustomizationPath(stage, project string) (path string,
 func (c Codebase) GetHpaPath(stage, project, service string) (path string, err error) {
 	switch c.Type {
 	case 1:
-		path, err = c.getType1RepoPath("hpa.yaml", stage)
+		path, err = c.getType1StagePath("hpa.yaml", stage)
 	case 2:
 		path, err = c.getType2ServicePath("hpa.yaml", stage, project, service)
 	default:
-		err = errors.New("StructureType is not supported. Check kubernetes-configs.yaml of major-tom-go")
+		err = errors.New("Type is not supported. Check kubernetes-configs.yaml of major-tom-go")
 	}
 	return path, err
 }

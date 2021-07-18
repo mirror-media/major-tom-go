@@ -1,3 +1,5 @@
+// +build localtest
+
 package command
 
 import (

@@ -1,0 +1,47 @@
+steps:
+  # Run tests and save to file
+  - name: golang
+    entrypoint: /bin/bash
+    args:
+      - -c
+      - |
+        go get -u github.com/jstemmer/go-junit-report
+        2>&1 go test -timeout 1m -v ./... | tee sponge.log
+        /go/bin/go-junit-report -set-exit-code < sponge.log > ${SHORT_SHA}_${BUILD_ID}_test_log.xml
+    dir: v2
+  # [END cloudbuild_go_test_yaml]
+
+  # [START cloudbuild_go_image_yaml]
+  # Docker Build
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-t",
+        "gcr.io/${PROJECT_ID}/${REPO_NAME}:${BRANCH_NAME}_${SHORT_SHA}_${BUILD_ID}",
+        ".",
+      ]
+  # [END cloudbuild_go_image_yaml]
+
+  # [START cloudbuild_go_push_yaml]
+  # Docker push to Google Artifact Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "push",
+        "gcr.io/${PROJECT_ID}/${REPO_NAME}:${BRANCH_NAME}_${SHORT_SHA}_${BUILD_ID}",
+      ]
+  # [END cloudbuild_go_push_yaml]
+
+# [START cloudbuild_go_logs_yaml]
+# Save test logs to Google Cloud Storage
+artifacts:
+  objects:
+    location: gs://$_BUCKET_NAME/
+    paths:
+      - ${SHORT_SHA}_${BUILD_ID}_test_log.xml
+# [END cloudbuild_go_logs_yaml]
+# Store images in Google Artifact Registry
+images:
+  - gcr.io/${PROJECT_ID}/${REPO_NAME}:${BRANCH_NAME}_${SHORT_SHA}_${BUILD_ID}
+# [END cloudbuild_go_yaml]

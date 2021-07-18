@@ -438,3 +438,154 @@ func TestCodebase_getType2ServicePath(t *testing.T) {
 		})
 	}
 }
+
+func TestCodebase_GetImageKustomizationPath(t *testing.T) {
+	type fields struct {
+		Projects []string
+		Repo     string
+		Services []string
+		Stages   []string
+		Type     int8
+	}
+	type args struct {
+		stage   string
+		project string
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		args     args
+		wantPath string
+		wantErr  bool
+	}{
+		{
+			name: "non-prod path for type 2",
+			fields: fields{
+				Type:     2,
+				Repo:     "repoXYZ",
+				Stages:   []string{"dev", "staging", "prod"},
+				Projects: []string{"p1", "p2"},
+				Services: []string{"s1", "s2"},
+			},
+			args: args{
+				stage: "dev",
+			},
+			wantPath: "repoXYZ/overlays/dev/base/kustomization.yaml",
+		},
+		{
+			name: "project input doesn't interfere the result of the non-prod path for type 2",
+			fields: fields{
+				Type:     2,
+				Repo:     "repoXYZ",
+				Stages:   []string{"dev", "staging", "prod"},
+				Projects: []string{"p1", "p2"},
+				Services: []string{"s1", "s2"},
+			},
+			args: args{
+				stage:   "staging",
+				project: "pppp",
+			},
+			wantPath: "repoXYZ/overlays/staging/base/kustomization.yaml",
+		},
+		{
+			name: "prod path for type 2",
+			fields: fields{
+				Type:     2,
+				Repo:     "repoXYZ",
+				Stages:   []string{"dev", "staging", "prod"},
+				Projects: []string{"p1", "p2"},
+				Services: []string{"s1", "s2"},
+			},
+			args: args{
+				stage:   "prod",
+				project: "p1",
+			},
+			wantPath: "repoXYZ/overlays/prod/overlays/p1/base/kustomization.yaml",
+		},
+		{
+			name: "project parameter is necessary for the prod path for type 2",
+			fields: fields{
+				Type:     2,
+				Repo:     "repoXYZ",
+				Stages:   []string{"dev", "staging", "prod"},
+				Projects: []string{"p1", "p2"},
+				Services: []string{"s1", "s2"},
+			},
+			args: args{
+				stage: "prod",
+			},
+			wantPath: "repoXYZ/overlays/prod/overlays//base/kustomization.yaml",
+			wantErr:  true,
+		},
+		///
+		{
+			name: "non-prod path for type 1",
+			fields: fields{
+				Type:   1,
+				Repo:   "repoXYZ",
+				Stages: []string{"dev", "staging", "prod"},
+			},
+			args: args{
+				stage: "dev",
+			},
+			wantPath: "repoXYZ/overlays/dev/kustomization.yaml",
+		},
+		{
+			name: "project input doesn't interfere the result of the non-prod path for type 1",
+			fields: fields{
+				Type:   1,
+				Repo:   "repoXYZ",
+				Stages: []string{"dev", "staging", "prod"},
+			},
+			args: args{
+				stage:   "staging",
+				project: "pppp",
+			},
+			wantPath: "repoXYZ/overlays/staging/kustomization.yaml",
+		},
+		{
+			name: "prod path for type 1",
+			fields: fields{
+				Type:   1,
+				Repo:   "repoXYZ",
+				Stages: []string{"dev", "staging", "prod"},
+			},
+			args: args{
+				stage: "prod",
+			},
+			wantPath: "repoXYZ/overlays/prod/kustomization.yaml",
+		},
+		{
+			name: "project parameter is not necessary for the prod path for type 1",
+			fields: fields{
+				Type:   1,
+				Repo:   "repoXYZ",
+				Stages: []string{"dev", "staging", "prod"},
+			},
+			args: args{
+				stage:   "prod",
+				project: "p1",
+			},
+			wantPath: "repoXYZ/overlays/prod/kustomization.yaml",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := Codebase{
+				Projects: tt.fields.Projects,
+				Repo:     tt.fields.Repo,
+				Services: tt.fields.Services,
+				Stages:   tt.fields.Stages,
+				Type:     tt.fields.Type,
+			}
+			gotPath, err := c.GetImageKustomizationPath(tt.args.stage, tt.args.project)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Codebase.GetImageKustomizationPath() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotPath != tt.wantPath {
+				t.Errorf("Codebase.GetImageKustomizationPath() = %v, want %v", gotPath, tt.wantPath)
+			}
+		})
+	}
+}

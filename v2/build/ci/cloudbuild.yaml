@@ -19,8 +19,11 @@ steps:
         "build",
         "-t",
         "gcr.io/${PROJECT_ID}/${REPO_NAME}:${BRANCH_NAME}_${SHORT_SHA}_${BUILD_ID}",
+        "-f",
+        "build/package/Dockerfile",
         ".",
       ]
+    dir: v2
   # [END cloudbuild_go_image_yaml]
 
   # [START cloudbuild_go_push_yaml]

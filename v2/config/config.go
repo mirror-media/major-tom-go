@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/pkg/errors"
 )
@@ -40,6 +41,7 @@ type Codebase struct {
 
 type Service struct {
 	Name          string
+	Project       string
 	Repo          string
 	SimpleService string
 }
@@ -61,15 +63,20 @@ func (c Codebase) GetServices() (services []Service, err error) {
 			Repo: c.Repo,
 		})
 	case 2:
-		for _, service := range c.Services {
-			services = append(services, Service{
-				Name:          fmt.Sprintf("%s-%s-%s", c.Repo, c.Projects, service),
-				Repo:          c.Repo,
-				SimpleService: service,
-			})
+		for _, project := range c.Projects {
+			for _, service := range c.Services {
+				services = append(services, Service{
+					Name:          fmt.Sprintf("%s-%s-%s", c.Repo, project, service),
+					Repo:          c.Repo,
+					SimpleService: service,
+				})
+			}
 		}
+		sort.Slice(services, func(i, j int) bool {
+			return services[i].Name < services[j].Name
+		})
 	default:
-		err = errors.New("StructureType is not supported. Check kubernetes-configs.yaml of major-tom-go")
+		err = errors.New("Type is not supported. Check kubernetes-configs.yaml of major-tom-go")
 	}
 	return services, err
 }
@@ -121,7 +128,7 @@ func (c Codebase) GetImageKustomizationPath(stage, project string) (path string,
 			path, err = c.getType2StagePath("kustomization.yaml", stage)
 		}
 	default:
-		err = errors.New("StructureType is not supported. Check kubernetes-configs.yaml of major-tom-go")
+		err = errors.New("Type is not supported. Check kubernetes-configs.yaml of major-tom-go")
 	}
 	return path, err
 }
@@ -133,7 +140,7 @@ func (c Codebase) GetHpaPath(stage, project, service string) (path string, err e
 	case 2:
 		path, err = c.getType2ServicePath("hpa.yaml", stage, project, service)
 	default:
-		err = errors.New("StructureType is not supported. Check kubernetes-configs.yaml of major-tom-go")
+		err = errors.New("Type is not supported. Check kubernetes-configs.yaml of major-tom-go")
 	}
 	return path, err
 }

@@ -81,7 +81,7 @@ func (c Codebase) GetServices() (services []Service, err error) {
 	return services, err
 }
 
-func (c Codebase) getType1RepoPath(filename, stage string) (path string, err error) {
+func (c Codebase) getType1StagePath(filename, stage string) (path string, err error) {
 	path = fmt.Sprintf("%s/overlays/%s/%s", c.Repo, stage, filename)
 	if c.Type != 1 {
 		return path, errors.New(fmt.Sprintf("codebase has type(%d) so the path is wrong", c.Type))
@@ -141,7 +141,7 @@ func (c Codebase) getType2ServicePath(filename, stage, project, service string) 
 func (c Codebase) GetImageKustomizationPath(stage, project string) (path string, err error) {
 	switch c.Type {
 	case 1:
-		path, err = c.getType1RepoPath("kustomization.yaml", stage)
+		path, err = c.getType1StagePath("kustomization.yaml", stage)
 	case 2:
 		if stage == "prod" {
 			path, err = c.getType2ProjectPath("kustomization.yaml", stage, project)
@@ -157,7 +157,7 @@ func (c Codebase) GetImageKustomizationPath(stage, project string) (path string,
 func (c Codebase) GetHpaPath(stage, project, service string) (path string, err error) {
 	switch c.Type {
 	case 1:
-		path, err = c.getType1RepoPath("hpa.yaml", stage)
+		path, err = c.getType1StagePath("hpa.yaml", stage)
 	case 2:
 		path, err = c.getType2ServicePath("hpa.yaml", stage, project, service)
 	default:

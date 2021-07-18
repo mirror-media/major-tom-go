@@ -225,7 +225,7 @@ func TestCodebase_GetServices(t *testing.T) {
 	}
 }
 
-func TestCodebase_getType1RepoPath(t *testing.T) {
+func TestCodebase_getType1StagePath(t *testing.T) {
 	type fields struct {
 		Projects []string
 		Repo     string
@@ -297,7 +297,7 @@ func TestCodebase_getType1RepoPath(t *testing.T) {
 				Stages:   tt.fields.Stages,
 				Type:     tt.fields.Type,
 			}
-			gotPath, err := c.getType1RepoPath(tt.args.filename, tt.args.stage)
+			gotPath, err := c.getType1StagePath(tt.args.filename, tt.args.stage)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Codebase.getType1RepoPath() error = %v, wantErr %v", err, tt.wantErr)
 				return

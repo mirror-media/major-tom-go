@@ -109,7 +109,7 @@ func main() {
 						continue
 					}
 
-					logrus.Info("Event received: %+v\n", eventsAPIEvent)
+					logrus.Infof("Event received: %+v\n", eventsAPIEvent)
 
 					client.Ack(*evt.Request)
 

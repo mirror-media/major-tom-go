@@ -33,7 +33,7 @@ I would separate the operation to four categories:
 3. List
 4. Info
 
-v2.0.0 only supports `Image change`.
+v2.0.0-alpha.0 only supports `Image change`.
 
 ![cloudbuild-triggers.jpg](https://raw.githubusercontent.com/mirror-media/major-tom-go/31f4f5b256b8bcfeb73caa9c1bf7ef8c297613e8/v2/doc/cloudbuild-triggers.jpg)
 

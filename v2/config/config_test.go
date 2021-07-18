@@ -221,3 +221,87 @@ func TestCodebase_GetServices(t *testing.T) {
 		})
 	}
 }
+
+func TestCodebase_getType1RepoPath(t *testing.T) {
+	type fields struct {
+		Projects []string
+		Repo     string
+		Services []string
+		Stages   []string
+		Type     int8
+	}
+	type args struct {
+		filename string
+		stage    string
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		args     args
+		wantPath string
+		wantErr  bool
+	}{
+		{
+			name: "path for type 2 will report error",
+			fields: fields{
+				Type:     2,
+				Repo:     "repoXYZ",
+				Stages:   []string{"ss1", "ss2"},
+				Projects: []string{"p1", "p2"},
+				Services: []string{"s1", "s2"},
+			},
+			args: args{
+				filename: "filename.ext",
+				stage:    "ss1",
+			},
+			wantPath: "repoXYZ/overlays/ss1/filename.ext",
+			wantErr:  true,
+		},
+		{
+			name: "path for type 1",
+			fields: fields{
+				Type:   1,
+				Repo:   "repoXYZ",
+				Stages: []string{"ss1", "ss2"},
+			},
+			args: args{
+				filename: "filename.ext",
+				stage:    "ss1",
+			},
+			wantPath: "repoXYZ/overlays/ss1/filename.ext",
+		},
+		{
+			name: "wrong stage will still return a path for type 1",
+			fields: fields{
+				Type:   1,
+				Repo:   "repoXYZ",
+				Stages: []string{"ss1", "ss2"},
+			},
+			args: args{
+				filename: "filename.ext",
+				stage:    "s1",
+			},
+			wantPath: "repoXYZ/overlays/s1/filename.ext",
+			wantErr:  true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := Codebase{
+				Projects: tt.fields.Projects,
+				Repo:     tt.fields.Repo,
+				Services: tt.fields.Services,
+				Stages:   tt.fields.Stages,
+				Type:     tt.fields.Type,
+			}
+			gotPath, err := c.getType1RepoPath(tt.args.filename, tt.args.stage)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Codebase.getType1RepoPath() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotPath != tt.wantPath {
+				t.Errorf("Codebase.getType1RepoPath() = %v, want %v", gotPath, tt.wantPath)
+			}
+		})
+	}
+}

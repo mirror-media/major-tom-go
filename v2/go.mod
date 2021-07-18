@@ -3,13 +3,13 @@ module github.com/mirror-media/major-tom-go/v2
 go 1.16
 
 require (
+	github.com/bcgodev/logrus-formatter-gke v1.0.0
 	github.com/go-git/go-billy/v5 v5.3.1
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/gookit/config/v2 v2.0.24
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/slack-go/slack v0.9.2
-	github.com/yanana/logrus-formatter-gke v0.0.1 // indirect
 	k8s.io/apimachinery v0.21.2
 	k8s.io/client-go v0.21.2
 )

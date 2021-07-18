@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	formatter "github.com/bcgodev/logrus-formatter-gke"
 	gookitconfig "github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/yaml"
 	"github.com/mirror-media/major-tom-go/v2/config"
@@ -17,7 +18,6 @@ import (
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 	"github.com/slack-go/slack/socketmode"
-	formatter "github.com/yanana/logrus-formatter-gke"
 )
 
 func main() {

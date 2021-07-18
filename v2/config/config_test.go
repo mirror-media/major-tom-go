@@ -5,6 +5,9 @@ import (
 	"testing"
 )
 
+// The config test is important because they determine the files to be changed for different operations
+// They are the core of the major tom
+
 func Test_contains(t *testing.T) {
 	type args struct {
 		s      []string

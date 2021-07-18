@@ -110,6 +110,10 @@ func (c Codebase) getType2ProjectPath(filename, stage, project string) (path str
 
 func (c Codebase) getType2StagePath(filename, stage string) (path string, err error) {
 	path = fmt.Sprintf("%s/overlays/%s/base/%s", c.Repo, stage, filename)
+
+	if c.Type != 2 {
+		return path, errors.New(fmt.Sprintf("codebase has type(%d) so the path is wrong", c.Type))
+	}
 	if !contains(c.Stages, stage) {
 		return path, errors.New(fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
 	}
@@ -118,6 +122,10 @@ func (c Codebase) getType2StagePath(filename, stage string) (path string, err er
 
 func (c Codebase) getType2ServicePath(filename, stage, project, service string) (path string, err error) {
 	path = fmt.Sprintf("%s/overlays/%s/overlays/%s/overlays/%s/%s", c.Repo, stage, project, service, filename)
+
+	if c.Type != 2 {
+		return path, errors.New(fmt.Sprintf("codebase has type(%d) so the path is wrong", c.Type))
+	}
 	if !contains(c.Stages, stage) {
 		return path, errors.New(fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
 	}

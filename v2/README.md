@@ -4,7 +4,7 @@
 
 The `kubernetes-configs` repository will be the sole resource of GitOps.
 
-## Proposal
+## Design
 
 The following is the proposal of API design for `major-tom-go` `v2`, and `v2` will be a breaking change.
 
@@ -24,7 +24,7 @@ These operation should be supported services in all stages of all projects in th
 
 All projects, including `readr`, `weekly`, and `tv` will be supported at the end.
 
-## API Design Proposal
+## API Documentation
 
 I would separate the operation to four categories:
 
@@ -32,6 +32,8 @@ I would separate the operation to four categories:
 2. Scaling
 3. List
 4. Info
+
+v1.0.0 only supports `Image change`.
 
 ![cloudbuild-triggers.jpg](https://raw.githubusercontent.com/mirror-media/major-tom-go/31f4f5b256b8bcfeb73caa9c1bf7ef8c297613e8/v2/doc/cloudbuild-triggers.jpg)
 
@@ -41,13 +43,13 @@ According to the design of `kubernetes-configs`, the image tag will be defined i
 
 Thus two different api are designed for them. Reasons will be given after the following section.
 
-1. `release`: means release a image tag
+1. `release`: means release a image tag to the `prod` env for the specific `project`
    1. `release {repo} project={project} image-tag={image tag}` for the likes of `openwarehouse`, eg., `release openwarehouse project=tv image-tag=prod_81ab7ac`
    2.  `release {repo} image-tag={image tag}` for the likes of `mirror-tv-nuxt`, eg., `release mirror-tv-nuxt image-tag=prod_399440e`
 
 It will look for the `kustomize.yaml` in the project folder, if specified, of `prod` by default.
 
-2. `deploy`: can deploy a image to staing or dev environments for all projects
+2. `deploy`: can deploy a image to staing or dev environments for all projects. `prod` env is not supported by `deploy`
    1. `deploy {repo} env={stage} image-tag={image tag}`, eg., `deploy openwarehouse env=dev mage-tag=dev_1bac23`
 
 I choose two separate commands to change image tag in different environments because

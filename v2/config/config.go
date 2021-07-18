@@ -82,39 +82,52 @@ func (c Codebase) GetServices() (services []Service, err error) {
 }
 
 func (c Codebase) getType1RepoPath(filename, stage string) (path string, err error) {
-	if !contains(c.Stages, stage) {
-		err = errors.New(fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
+	path = fmt.Sprintf("%s/overlays/%s/%s", c.Repo, stage, filename)
+	if c.Type != 1 {
+		return path, errors.New(fmt.Sprintf("codebase has type(%d) so the path is wrong", c.Type))
 	}
-	return fmt.Sprintf("%s/overlays/%s/%s", c.Repo, stage, filename), err
+	if !contains(c.Stages, stage) {
+		return path, errors.New(fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
+	}
+	return path, err
 }
 
 func (c Codebase) getType2ProjectPath(filename, stage, project string) (path string, err error) {
+	path = fmt.Sprintf("%s/overlays/%s/overlays/%s/base/%s", c.Repo, stage, project, filename)
+
+	if c.Type != 2 {
+		return path, errors.New(fmt.Sprintf("codebase has type(%d) so the path is wrong", c.Type))
+	}
+
 	if !contains(c.Stages, stage) {
-		err = errors.New(fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
+		return path, errors.New(fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
 	}
 	if !contains(c.Projects, project) {
-		err = errors.New(fmt.Sprintf("project(%s) is not supported for %s", project, c.Repo))
+		return path, errors.New(fmt.Sprintf("project(%s) is not supported for %s", project, c.Repo))
 	}
-	return fmt.Sprintf("%s/overlays/%s/overlays/%s/base/%s", c.Repo, stage, project, filename), err
+	return path, err
 }
+
 func (c Codebase) getType2StagePath(filename, stage string) (path string, err error) {
+	path = fmt.Sprintf("%s/overlays/%s/base/%s", c.Repo, stage, filename)
 	if !contains(c.Stages, stage) {
-		err = errors.New(fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
+		return path, errors.New(fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
 	}
-	return fmt.Sprintf("%s/overlays/%s/base/%s", c.Repo, stage, filename), err
+	return path, err
 }
 
 func (c Codebase) getType2ServicePath(filename, stage, project, service string) (path string, err error) {
+	path = fmt.Sprintf("%s/overlays/%s/overlays/%s/overlays/%s/%s", c.Repo, stage, project, service, filename)
 	if !contains(c.Stages, stage) {
-		err = errors.New(fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
+		return path, errors.New(fmt.Sprintf("stage(%s) is not supported for %s", stage, c.Repo))
 	}
 	if !contains(c.Projects, project) {
-		err = errors.New(fmt.Sprintf("project(%s) is not supported for %s", project, c.Repo))
+		return path, errors.New(fmt.Sprintf("project(%s) is not supported for %s", project, c.Repo))
 	}
 	if !contains(c.Services, service) {
-		err = errors.New(fmt.Sprintf("service(%s) is not supported for %s", service, c.Repo))
+		return path, errors.New(fmt.Sprintf("service(%s) is not supported for %s", service, c.Repo))
 	}
-	return fmt.Sprintf("%s/overlays/%s/overlays/%s/overlays/%s/%s", c.Repo, stage, project, service, filename), err
+	return path, err
 }
 
 func (c Codebase) GetImageKustomizationPath(stage, project string) (path string, err error) {

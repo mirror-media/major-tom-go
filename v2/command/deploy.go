@@ -228,7 +228,7 @@ func deploy(ctx context.Context, k8sRepo *gitop.Repository, codebase config.Code
 		pendingProject = "/" + project
 	}
 
-	messages = append(messages, fmt.Sprintf("deploy(%s/%s%s): deployed by %s", codebase.Repo, stage, pendingProject, caller), "", fmt.Sprintf("Set %s(%s) to %v", "image-tag", "images.0.newTag", imageTag), fmt.Sprintf("by \"%s\"", message))
+	messages = append(messages, fmt.Sprintf("deploy(%s/%s%s): deployed by %s", codebase.Repo, stage, pendingProject, caller), "", fmt.Sprintf("Set %s(%s) to %v", "image-tag", "images.0.newTag", imageTag), "", fmt.Sprintf("by \"%s\"", message))
 
 	err = f.Truncate(0)
 	f.Close()

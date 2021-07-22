@@ -104,11 +104,6 @@ func deploy(ctx context.Context, clusterConfigs config.K8S, gitConfigs map[confi
 			err = errors.Wrap(errRepo, fmt.Sprintf("getting repository for project(%s) has error", project))
 			break
 		}
-		err = repo.Pull()
-		if errHash != nil {
-			err = errors.Wrap(err, fmt.Sprintf("pulling repo for project(%s) has error", project))
-			break
-		}
 		hash, errHash := repo.GetHeadHash()
 		if errHash != nil {
 			err = errors.Wrap(errHash, fmt.Sprintf("getting head hash of repo for project(%s) has error", project))

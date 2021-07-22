@@ -139,6 +139,17 @@ func deploy(ctx context.Context, k8sRepo *gitop.Repository, codebase config.Code
 	ch := ctx.Value(mjcontext.ResponseChannel).(chan response)
 
 	repo := k8sRepo
+
+	err = repo.Pull()
+	if err != nil {
+		err = errors.Wrap(err, fmt.Sprintf("pulling repo for project(%s) has error", project))
+		ch <- response{
+			Messages: messages,
+			Error:    err,
+		}
+		return
+	}
+
 	hash, errHash := repo.GetHeadHash()
 	if errHash != nil {
 		err = errors.Wrap(errHash, fmt.Sprintf("getting head hash of repo(%s) has error", "kubernetes-configs"))
